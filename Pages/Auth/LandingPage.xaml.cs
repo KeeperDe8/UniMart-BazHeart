@@ -37,46 +37,107 @@ public partial class LandingPage : ContentPage
     private void OnLoginSegmentTapped(object? s, TappedEventArgs e) => ShowLogin();
     private void OnRegisterSegmentTapped(object? s, TappedEventArgs e) => ShowRegister();
 
-    private void ShowLogin()
+    private async void ShowLogin()
     {
-        LoginPanel.IsVisible = true;
+        if (LoginPanel.IsVisible && !OtpPanel.IsVisible) return;
+        var blue = (Color)Application.Current!.Resources["PrimaryBlue"];
+        var muted = (Color)Application.Current!.Resources["TextMuted"];
+        var card = (Color)Application.Current!.Resources["CardBg"];
+
+        LoginTabPill.BackgroundColor = card;
+        RegisterTabPill.BackgroundColor = Colors.Transparent;
+        LoginTabText.TextColor = blue;
+        RegisterTabText.TextColor = muted;
+
         RegisterPanel.IsVisible = false;
+        OtpPanel.IsVisible = false;
+
+        LoginPanel.Opacity = 0;
+        LoginPanel.TranslationY = 12;
+        LoginPanel.IsVisible = true;
+
+        await Task.WhenAll(
+            LoginPanel.FadeToAsync(1, 200, Easing.CubicOut),
+            LoginPanel.TranslateToAsync(0, 0, 200, Easing.CubicOut)
+        );
     }
 
-    private void ShowRegister()
+    private async void ShowRegister()
     {
+        if (RegisterPanel.IsVisible && !OtpPanel.IsVisible) return;
+        var blue = (Color)Application.Current!.Resources["PrimaryBlue"];
+        var muted = (Color)Application.Current!.Resources["TextMuted"];
+        var card = (Color)Application.Current!.Resources["CardBg"];
+
+        RegisterTabPill.BackgroundColor = card;
+        LoginTabPill.BackgroundColor = Colors.Transparent;
+        RegisterTabText.TextColor = blue;
+        LoginTabText.TextColor = muted;
+
         LoginPanel.IsVisible = false;
+        OtpPanel.IsVisible = false;
+
+        RegisterPanel.Opacity = 0;
+        RegisterPanel.TranslationY = 12;
         RegisterPanel.IsVisible = true;
+
+        await Task.WhenAll(
+            RegisterPanel.FadeToAsync(1, 200, Easing.CubicOut),
+            RegisterPanel.TranslateToAsync(0, 0, 200, Easing.CubicOut)
+        );
     }
 
     private void OnBuyerRoleTapped(object? s, TappedEventArgs e) => SetRole(false);
     private void OnSellerRoleTapped(object? s, TappedEventArgs e) => SetRole(true);
 
-    private void SetRole(bool seller)
+    private async void SetRole(bool seller)
     {
         sellerRole = seller;
-        SellerFields.IsVisible = seller;
-        BuyerSegment.BackgroundColor = seller ? Colors.Transparent : (Color)Application.Current!.Resources["CardBg"];
-        SellerSegment.BackgroundColor = seller ? (Color)Application.Current!.Resources["CardBg"]: Colors.Transparent;
+        var blue = (Color)Application.Current!.Resources["PrimaryBlue"];
+        var muted = (Color)Application.Current!.Resources["TextMuted"];
+        var card = (Color)Application.Current!.Resources["CardBg"];
+
+        BuyerSegment.BackgroundColor = seller ? Colors.Transparent : card;
+        SellerSegment.BackgroundColor = seller ? card : Colors.Transparent;
+        BuyerRoleText.TextColor = seller ? muted : blue;
+        SellerRoleText.TextColor = seller ? blue : muted;
+
+        if (seller)
+        {
+            SellerFields.Opacity = 0;
+            SellerFields.TranslationY = 10;
+            SellerFields.IsVisible = true;
+            await Task.WhenAll(
+                SellerFields.FadeToAsync(1, 180, Easing.CubicOut),
+                SellerFields.TranslateToAsync(0, 0, 180, Easing.CubicOut)
+            );
+        }
+        else
+        {
+            SellerFields.IsVisible = false;
+        }
     }
 
-    // --- SHOW / HIDE PASSWORD TOGGLES ---
+    // --- VECTOR SHOW / HIDE PASSWORD TOGGLES ---
+    private const string EyeOpenPath = "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z";
+    private const string EyeClosedPath = "M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z";
+
     private void OnToggleLoginPassword(object? s, TappedEventArgs e)
     {
         LoginPassword.IsPassword = !LoginPassword.IsPassword;
-        LoginEyeBtn.Text = LoginPassword.IsPassword ? "👁" : "🙈";
+        LoginEyePath.Data = (Microsoft.Maui.Controls.Shapes.Geometry)new Microsoft.Maui.Controls.Shapes.PathGeometryConverter().ConvertFromInvariantString(LoginPassword.IsPassword ? EyeOpenPath : EyeClosedPath);
     }
 
     private void OnToggleRegisterPassword(object? s, TappedEventArgs e)
     {
         RegisterPassword.IsPassword = !RegisterPassword.IsPassword;
-        RegisterEyeBtn.Text = RegisterPassword.IsPassword ? "👁" : "🙈";
+        RegisterEyePath.Data = (Microsoft.Maui.Controls.Shapes.Geometry)new Microsoft.Maui.Controls.Shapes.PathGeometryConverter().ConvertFromInvariantString(RegisterPassword.IsPassword ? EyeOpenPath : EyeClosedPath);
     }
 
     private void OnToggleConfirmPassword(object? s, TappedEventArgs e)
     {
         ConfirmPassword.IsPassword = !ConfirmPassword.IsPassword;
-        ConfirmEyeBtn.Text = ConfirmPassword.IsPassword ? "👁" : "🙈";
+        ConfirmEyePath.Data = (Microsoft.Maui.Controls.Shapes.Geometry)new Microsoft.Maui.Controls.Shapes.PathGeometryConverter().ConvertFromInvariantString(ConfirmPassword.IsPassword ? EyeOpenPath : EyeClosedPath);
     }
 
     private string pendingEmail = "";
@@ -105,14 +166,21 @@ public partial class LandingPage : ContentPage
         }
     }
 
-    private void ShowOtp(string email)
+    private async void ShowOtp(string email)
     {
         pendingEmail = email;
         LoginPanel.IsVisible = false;
         RegisterPanel.IsVisible = false;
+        OtpPanel.Opacity = 0;
+        OtpPanel.TranslationY = 12;
         OtpPanel.IsVisible = true;
         OtpSubtitle.Text = $"We sent a 6-digit verification code to {email}. Check your email inbox.";
         OtpInput.Text = "";
+
+        await Task.WhenAll(
+            OtpPanel.FadeToAsync(1, 200, Easing.CubicOut),
+            OtpPanel.TranslateToAsync(0, 0, 200, Easing.CubicOut)
+        );
     }
 
     private void OnBackToLoginFromOtp(object? s, EventArgs e)
