@@ -33,7 +33,7 @@ public partial class BottomNavBar : ContentView
         }
     }
 
-    void SetPill(Border pill, Label icon, Label text, string tab)
+    void SetPill(Border pill, Microsoft.Maui.Controls.Shapes.Path icon, Label text, string tab)
     {
         bool isActive = string.Equals(ActiveTab, tab, StringComparison.OrdinalIgnoreCase);
         var blue = (Color)Application.Current!.Resources["PrimaryBlue"];
@@ -41,7 +41,7 @@ public partial class BottomNavBar : ContentView
 
         pill.BackgroundColor = isActive ? blue : Colors.Transparent;
         pill.Padding = isActive ? new Thickness(12, 6) : new Thickness(8, 4);
-        icon.TextColor = isActive ? Colors.White : muted;
+        icon.Fill = isActive ? Colors.White : muted;
         text.TextColor = isActive ? Colors.White : muted;
         text.IsVisible = isActive;
     }

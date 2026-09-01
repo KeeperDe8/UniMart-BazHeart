@@ -15,18 +15,18 @@
                 <!-- 1. Home Tab -->
                 <Border x:Name="HomePill" Grid.Column="0" BackgroundColor="{DynamicResource PrimaryBlue}" StrokeThickness="0" StrokeShape="RoundRectangle 20" Padding="8,4" HorizontalOptions="Center" VerticalOptions="Center">
                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnHomeTapped"/></Border.GestureRecognizers>
-                    <HorizontalStackLayout Spacing="4" VerticalOptions="Center" HorizontalOptions="Center">
-                        <Label x:Name="HomeIcon" Text="⌂" FontSize="18" TextColor="White" VerticalOptions="Center"/>
-                        <Label x:Name="HomeText" Text="Home" FontSize="11" FontAttributes="Bold" TextColor="White" VerticalOptions="Center"/>
+                    <HorizontalStackLayout Spacing="5" VerticalOptions="Center" HorizontalOptions="Center">
+                        <Path x:Name="HomeIcon" Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" Fill="White" Aspect="Uniform" HeightRequest="17" WidthRequest="17" VerticalOptions="Center"/>
+                        <Label x:Name="HomeText" Text="Home" FontSize="11.5" FontAttributes="Bold" TextColor="White" VerticalOptions="Center"/>
                     </HorizontalStackLayout>
                 </Border>
 
                 <!-- 2. Explore / Category Tab -->
                 <Border x:Name="ExplorePill" Grid.Column="1" BackgroundColor="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 20" Padding="8,4" HorizontalOptions="Center" VerticalOptions="Center">
                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnExploreTapped"/></Border.GestureRecognizers>
-                    <HorizontalStackLayout Spacing="4" VerticalOptions="Center" HorizontalOptions="Center">
-                        <Label x:Name="ExploreIcon" Text="☷" FontSize="17" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center"/>
-                        <Label x:Name="ExploreText" Text="Explore" FontSize="11" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center" IsVisible="False"/>
+                    <HorizontalStackLayout Spacing="5" VerticalOptions="Center" HorizontalOptions="Center">
+                        <Path x:Name="ExploreIcon" Data="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4z" Fill="{DynamicResource TextMuted}" Aspect="Uniform" HeightRequest="16" WidthRequest="16" VerticalOptions="Center"/>
+                        <Label x:Name="ExploreText" Text="Explore" FontSize="11.5" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center" IsVisible="False"/>
                     </HorizontalStackLayout>
                 </Border>
 
@@ -42,13 +42,13 @@
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnCreateListingTapped"/>
                         </Border.GestureRecognizers>
-                        <Label Text="+"
-                               FontSize="25"
-                               FontAttributes="Bold"
-                               TextColor="White"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center"
-                               Margin="0,-2,0,0"/>
+                        <Path Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                              Fill="White"
+                              Aspect="Uniform"
+                              HeightRequest="20"
+                              WidthRequest="20"
+                              HorizontalOptions="Center"
+                              VerticalOptions="Center"/>
                     </Border>
                 </Grid>
 
@@ -56,9 +56,9 @@
                 <Grid Grid.Column="3" HorizontalOptions="Center" VerticalOptions="Center">
                     <Border x:Name="MessagesPill" BackgroundColor="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 20" Padding="8,4">
                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMessagesTapped"/></Border.GestureRecognizers>
-                        <HorizontalStackLayout Spacing="4" VerticalOptions="Center" HorizontalOptions="Center">
-                            <Label x:Name="MessagesIcon" Text="✉" FontSize="17" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center"/>
-                            <Label x:Name="MessagesText" Text="Chats" FontSize="11" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center" IsVisible="False"/>
+                        <HorizontalStackLayout Spacing="5" VerticalOptions="Center" HorizontalOptions="Center">
+                            <Path x:Name="MessagesIcon" Data="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" Fill="{DynamicResource TextMuted}" Aspect="Uniform" HeightRequest="16" WidthRequest="16" VerticalOptions="Center"/>
+                            <Label x:Name="MessagesText" Text="Chats" FontSize="11.5" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center" IsVisible="False"/>
                         </HorizontalStackLayout>
                     </Border>
                     <Border x:Name="MessageBadge" BackgroundColor="{DynamicResource DangerRed}" StrokeThickness="0" StrokeShape="RoundRectangle 6" HeightRequest="7" WidthRequest="7" HorizontalOptions="End" VerticalOptions="Start" Margin="0,2,4,0"/>
@@ -67,9 +67,9 @@
                 <!-- 5. Profile Tab -->
                 <Border x:Name="ProfilePill" Grid.Column="4" BackgroundColor="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 20" Padding="8,4" HorizontalOptions="Center" VerticalOptions="Center">
                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnProfileTapped"/></Border.GestureRecognizers>
-                    <HorizontalStackLayout Spacing="4" VerticalOptions="Center" HorizontalOptions="Center">
-                        <Label x:Name="ProfileIcon" Text="♙" FontSize="18" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center"/>
-                        <Label x:Name="ProfileText" Text="Profile" FontSize="11" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center" IsVisible="False"/>
+                    <HorizontalStackLayout Spacing="5" VerticalOptions="Center" HorizontalOptions="Center">
+                        <Path x:Name="ProfileIcon" Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" Fill="{DynamicResource TextMuted}" Aspect="Uniform" HeightRequest="16" WidthRequest="16" VerticalOptions="Center"/>
+                        <Label x:Name="ProfileText" Text="Profile" FontSize="11.5" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center" IsVisible="False"/>
                     </HorizontalStackLayout>
                 </Border>
             </Grid>

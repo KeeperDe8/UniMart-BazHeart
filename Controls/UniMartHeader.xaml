@@ -26,7 +26,13 @@
             </Grid.GestureRecognizers>
             <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeThickness="1" StrokeShape="RoundRectangle 19"
                     Shadow="{OnPlatform Default={Shadow Brush='#000000', Offset='0,2', Radius=8, Opacity=0.08}}">
-                <Label Text="⌕" FontSize="20" TextColor="{DynamicResource TextDark}" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,-2,0,0"/>
+                <Path Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                      Fill="{DynamicResource TextDark}"
+                      Aspect="Uniform"
+                      HeightRequest="16"
+                      WidthRequest="16"
+                      HorizontalOptions="Center"
+                      VerticalOptions="Center"/>
             </Border>
         </Grid>
 
@@ -36,7 +42,13 @@
             </Grid.GestureRecognizers>
             <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeThickness="1" StrokeShape="RoundRectangle 19"
                     Shadow="{OnPlatform Default={Shadow Brush='#000000', Offset='0,2', Radius=8, Opacity=0.08}}">
-                <Label Text="✉" FontSize="16" TextColor="{DynamicResource TextDark}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                <Path Data="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+                      Fill="{DynamicResource TextDark}"
+                      Aspect="Uniform"
+                      HeightRequest="16"
+                      WidthRequest="16"
+                      HorizontalOptions="Center"
+                      VerticalOptions="Center"/>
             </Border>
             <Ellipse Fill="{DynamicResource DangerRed}" HeightRequest="8" WidthRequest="8" HorizontalOptions="End" VerticalOptions="Start" Margin="0,2,2,0"/>
         </Grid>

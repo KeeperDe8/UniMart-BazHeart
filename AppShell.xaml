@@ -4,9 +4,11 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:FinalProject"
+    xmlns:splash="clr-namespace:FinalProject.Pages.Splash"
     FlyoutBehavior="Disabled"
     Shell.NavBarIsVisible="False">
     <TabBar Shell.TabBarIsVisible="False">
+        <ShellContent Route="splash" ContentTemplate="{DataTemplate splash:SplashPage}" />
         <ShellContent Route="home" ContentTemplate="{DataTemplate local:HomeScreenPage}" />
         <ShellContent Route="explore" ContentTemplate="{DataTemplate local:ExplorePage}" />
         <ShellContent Route="messages" ContentTemplate="{DataTemplate local:MessagesPage}" />

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FinalProject.Pages.Splash.SplashPage"
+             BackgroundColor="#0B111E"
+             Shell.NavBarIsVisible="False">
+    <Grid x:Name="SplashRoot" HorizontalOptions="Fill" VerticalOptions="Fill">
+        <!-- Background Ambient Glow -->
+        <Border BackgroundColor="#2563EB"
+                Opacity="0.18"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 160"
+                HeightRequest="320"
+                WidthRequest="320"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"/>
+
+        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="20">
+            <!-- Animated Logo Container -->
+            <Border x:Name="LogoContainer"
+                    BackgroundColor="White"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 36"
+                    HeightRequest="128"
+                    WidthRequest="128"
+                    Padding="14"
+                    HorizontalOptions="Center"
+                    Shadow="{OnPlatform Default={Shadow Brush='#38BDF8', Offset='0,8', Radius=30, Opacity=0.4}}">
+                <Image Source="bazheart_logo.png" Aspect="AspectFit"/>
+            </Border>
+
+            <!-- Brand Typography -->
+            <VerticalStackLayout x:Name="TextContainer" Spacing="6" HorizontalOptions="Center">
+                <HorizontalStackLayout Spacing="0" HorizontalOptions="Center">
+                    <Label Text="Baz" FontSize="36" FontAttributes="Bold" TextColor="White"/>
+                    <Label Text="Heart" FontSize="36" FontAttributes="Bold" TextColor="#38BDF8"/>
+                </HorizontalStackLayout>
+                <Label Text="Find. Share. Connect." FontSize="14" TextColor="#94A3B8" HorizontalOptions="Center" CharacterSpacing="1.2"/>
+            </VerticalStackLayout>
+
+            <!-- Pulsing Loading Indicator -->
+            <ActivityIndicator x:Name="LoadingSpinner" IsRunning="True" Color="#38BDF8" HeightRequest="28" WidthRequest="28" Margin="0,20,0,0"/>
+        </VerticalStackLayout>
+
+        <!-- Bottom Campus Tag -->
+        <Border BackgroundColor="#1E293B"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 12"
+                Padding="12,6"
+                HorizontalOptions="Center"
+                VerticalOptions="End"
+                Margin="0,0,0,32">
+            <Label Text="NU Lipa Campus Marketplace" FontSize="11" TextColor="#64748B" FontAttributes="Bold"/>
+        </Border>
+    </Grid>
+</ContentPage>
