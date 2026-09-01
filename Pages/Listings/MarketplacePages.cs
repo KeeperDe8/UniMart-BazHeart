@@ -534,11 +534,20 @@ public class ProductDetailPage : UniPage
             Description = "Signature iced matcha layered with authentic Japanese Uji matcha and house-made strawberry puree with creamy fresh milk."
         };
 
-        var currentUserName = string.IsNullOrWhiteSpace(State.CurrentUserName) ? "Maria Santos" : State.CurrentUserName;
-        var currentHandle = "@" + currentUserName.ToLower().Replace(" ", "");
-        bool isOwner = p.Seller.Equals(currentHandle, StringComparison.OrdinalIgnoreCase) 
-                    || p.Seller.Contains(currentUserName, StringComparison.OrdinalIgnoreCase)
-                    || p.Seller.Contains("mariasantos", StringComparison.OrdinalIgnoreCase);
+        var currentUserName = State.CurrentUserName?.Trim() ?? "";
+        var currentHandle = string.IsNullOrWhiteSpace(currentUserName) ? "" : "@" + currentUserName.ToLower().Replace(" ", "");
+
+        bool isOwner = false;
+        if (p.SellerId > 0 && State.CurrentUserId > 0)
+        {
+            isOwner = p.SellerId == State.CurrentUserId;
+        }
+        else if (!string.IsNullOrWhiteSpace(currentUserName))
+        {
+            isOwner = p.Seller.Equals(currentHandle, StringComparison.OrdinalIgnoreCase) 
+                   || p.Seller.Equals(currentUserName, StringComparison.OrdinalIgnoreCase)
+                   || p.Seller.Equals($"@{currentUserName}", StringComparison.OrdinalIgnoreCase);
+        }
 
         // Top Action Header (Back & Share/Edit)
         var top = new Grid { Padding = new Thickness(16, 8), ColumnDefinitions = Cols("Auto,*,Auto"), BackgroundColor = Colors.Transparent };

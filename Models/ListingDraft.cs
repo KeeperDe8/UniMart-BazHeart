@@ -27,5 +27,6 @@ public class MarketplaceProduct : ListingDraft
 {
     public string Status { get; set; } = "Active";
     public string Seller { get; set; } = "@matchabykai";
+    public int SellerId { get; set; }
     public bool IsSaved { get; set; }
 }
