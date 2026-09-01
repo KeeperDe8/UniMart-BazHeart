@@ -305,6 +305,8 @@ public class ApiConversation
     public ApiUser? OtherUser { get; set; }
     [JsonPropertyName("latest_message")]
     public ApiMessage? LatestMessage { get; set; }
+    [JsonPropertyName("listing")]
+    public ApiListing? Listing { get; set; }
 }
 
 public class ConversationDetailResponse
