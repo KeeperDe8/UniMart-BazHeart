@@ -28,6 +28,22 @@ public partial class LandingPage : ContentPage
         }
     }
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        if (HeroSection != null)
+        {
+            HeroSection.Opacity = 0;
+            HeroSection.Scale = 0.88;
+            HeroSection.TranslationY = -12;
+            await Task.WhenAll(
+                HeroSection.FadeToAsync(1, 350, Easing.CubicOut),
+                HeroSection.ScaleToAsync(1, 450, Easing.SpringOut),
+                HeroSection.TranslateToAsync(0, 0, 350, Easing.CubicOut)
+            );
+        }
+    }
+
     private async Task HideLogoutBannerAsync()
     {
         await Task.Delay(2500);
