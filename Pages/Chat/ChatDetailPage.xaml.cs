@@ -8,13 +8,33 @@ public partial class ChatDetailPage : ContentPage
 {
     readonly int conversationId = 1;
     IDispatcherTimer? pollTimer;
+    bool isPolling = false;
     int simulatedIncomingStep = 0;
+    readonly HashSet<int> renderedMessageIds = [];
 
     public ChatDetailPage()
     {
         InitializeComponent();
+        BindCurrentProductAndSeller();
         LoadInitialMessages();
         StartRealtimePolling();
+    }
+
+    void BindCurrentProductAndSeller()
+    {
+        var p = AppState.Instance.CurrentProduct;
+        if (p != null)
+        {
+            var rawSeller = string.IsNullOrWhiteSpace(p.Seller) ? "Maria Santos" : p.Seller;
+            var cleanSeller = rawSeller.StartsWith("@") ? rawSeller.Substring(1) : rawSeller;
+            var displayName = cleanSeller.Equals("mariasantos", StringComparison.OrdinalIgnoreCase) ? "Maria Santos" :
+                              cleanSeller.Equals("matchabykai", StringComparison.OrdinalIgnoreCase) ? "Kai dela Cruz" : cleanSeller;
+
+            ChatUserName.Text = $"{displayName} (@{cleanSeller.ToLower()})";
+            ChatAvatar.Source = cleanSeller.ToLower().Contains("maria") ? "profile_sdada.jpg" : "kai_avatar.jpg";
+            ProductThumb.Source = p.ImageSource;
+            ProductTitleText.Text = $"{p.ProductName} • ₱{p.Price:0.00}";
+        }
     }
 
     protected override void OnDisappearing()
@@ -26,7 +46,7 @@ public partial class ChatDetailPage : ContentPage
     void StartRealtimePolling()
     {
         pollTimer = Dispatcher.CreateTimer();
-        pollTimer.Interval = TimeSpan.FromSeconds(2.5);
+        pollTimer.Interval = TimeSpan.FromSeconds(6);
         pollTimer.Tick += async (s, e) => await PollIncomingMessagesAsync();
         pollTimer.Start();
     }
@@ -37,17 +57,15 @@ public partial class ChatDetailPage : ContentPage
         pollTimer = null;
     }
 
-    readonly HashSet<int> renderedMessageIds = [];
-
     async void LoadInitialMessages()
     {
         MessagesLayout.Clear();
         renderedMessageIds.Clear();
 
-        // Fetch from API
+        // Fetch from API in background
         try
         {
-            var res = await CampusApiService.Instance.GetMessagesAsync(conversationId);
+            var res = await Task.Run(() => CampusApiService.Instance.GetMessagesAsync(conversationId));
             if (res?.Messages != null && res.Messages.Count > 0)
             {
                 MessagesLayout.Add(CreateTimePill("Today"));
@@ -70,19 +88,25 @@ public partial class ChatDetailPage : ContentPage
         }
         catch { }
 
-        // Fallback default conversation preview if no messages in DB
+        // Product-aware default conversation preview if no messages in DB
+        var p = AppState.Instance.CurrentProduct;
+        var prodName = p?.ProductName ?? "Item";
+
         MessagesLayout.Add(CreateTimePill("Today"));
-        MessagesLayout.Add(CreateMessageBubble("Hi! Thanks for checking my listing. Let me know if you want to reserve a cup.", "12:06 PM", false));
-        MessagesLayout.Add(CreateMessageBubble("Hi Kai! Is the Strawberry Cold Foam Matcha still available for pickup this afternoon?", "12:08 PM", true));
-        MessagesLayout.Add(CreateMessageBubble("Sure! I have 3 cups left today at the Main Building Lobby.", "12:10 PM", false));
-        MessagesLayout.Add(CreateMeetupCard("Main Building – Ground Floor Lobby", "Today at 2:00 PM", "Look for the green tumbler at the lobby benches."));
+        MessagesLayout.Add(CreateMessageBubble($"Hi! Thanks for checking my listing for {prodName}. Feel free to ask any questions.", "12:06 PM", false));
+        MessagesLayout.Add(CreateMessageBubble($"Hi! Is {prodName} available for campus meetup today?", "12:08 PM", true));
+        MessagesLayout.Add(CreateMessageBubble($"Yes! Available for meetup at the Main Building Ground Floor Lobby.", "12:10 PM", false));
+        MessagesLayout.Add(CreateMeetupCard("Main Building – Ground Floor Lobby", "Today at 2:30 PM", $"Campus handover for {prodName}."));
     }
 
     async Task PollIncomingMessagesAsync()
     {
+        if (isPolling) return;
+        isPolling = true;
+
         try
         {
-            var res = await CampusApiService.Instance.GetMessagesAsync(conversationId);
+            var res = await Task.Run(() => CampusApiService.Instance.GetMessagesAsync(conversationId));
             if (res?.Messages != null && res.Messages.Count > 0)
             {
                 bool hasNew = false;
@@ -110,6 +134,10 @@ public partial class ChatDetailPage : ContentPage
             }
         }
         catch { }
+        finally
+        {
+            isPolling = false;
+        }
     }
 
     View CreateTimePill(string time)
