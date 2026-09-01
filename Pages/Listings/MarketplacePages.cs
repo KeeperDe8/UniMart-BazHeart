@@ -721,7 +721,11 @@ public class ProductDetailPage : UniPage
         }
         else
         {
-            actionBtn = Btn("Message Seller", async (_, _) => await Go("chat"));
+            actionBtn = Btn("Message Seller", async (_, _) =>
+            {
+                AppState.Instance.CurrentProduct = p;
+                await Go("chat");
+            });
         }
         actionBtn.HeightRequest = 46;
         actionBtn.Padding = new Thickness(16, 0);

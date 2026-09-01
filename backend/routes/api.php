@@ -42,6 +42,7 @@ Route::delete('/schedules/{id}', [ScheduleController::class, 'destroy']);
 
 // Messaging & Meetups
 Route::get('/conversations', [ChatController::class, 'conversations']);
+Route::post('/conversations/get-or-create', [ChatController::class, 'getOrCreate']);
 Route::get('/conversations/{id}/messages', [ChatController::class, 'messages']);
 Route::post('/messages', [ChatController::class, 'sendMessage']);
 

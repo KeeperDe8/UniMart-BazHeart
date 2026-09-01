@@ -142,6 +142,18 @@ public class CampusApiService
         return res?.Conversations ?? [];
     }
 
+    public async Task<GetOrCreateConversationResponse?> GetOrCreateConversationAsync(int recipientId, string sellerName, int? listingId)
+    {
+        var uid = AppState.Instance.CurrentUserId;
+        return await _api.PostAsync<object, GetOrCreateConversationResponse>("conversations/get-or-create", new
+        {
+            user_id = uid > 0 ? uid : 1,
+            recipient_id = recipientId,
+            seller_name = sellerName,
+            listing_id = listingId
+        });
+    }
+
     public async Task<ConversationDetailResponse?> GetMessagesAsync(int conversationId)
     {
         var uid = AppState.Instance.CurrentUserId;
@@ -348,7 +360,18 @@ public class ApiNotification
     public string Id { get; set; } = "";
     public string Title { get; set; } = "";
     public string Body { get; set; } = "";
-    public string Type { get; set; } = "";
-    [JsonPropertyName("read_at")]
-    public DateTime? ReadAt { get; set; }
+    public string Type { get; set; } = "general";
+    [JsonPropertyName("is_read")]
+    public bool IsRead { get; set; }
+    [JsonPropertyName("created_at")]
+    public DateTime CreatedAt { get; set; }
+}
+
+public class GetOrCreateConversationResponse
+{
+    [JsonPropertyName("conversation_id")]
+    public int ConversationId { get; set; }
+    [JsonPropertyName("recipient_id")]
+    public int RecipientId { get; set; }
+    public List<ApiMessage> Messages { get; set; } = [];
 }

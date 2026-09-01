@@ -6,10 +6,11 @@ namespace FinalProject;
 
 public partial class ChatDetailPage : ContentPage
 {
-    readonly int conversationId = 1;
+    int activeConversationId = 0;
+    int targetSellerId = 0;
+    string targetSellerName = "Seller";
     IDispatcherTimer? pollTimer;
     bool isPolling = false;
-    int simulatedIncomingStep = 0;
     readonly HashSet<int> renderedMessageIds = [];
 
     public ChatDetailPage()
@@ -30,10 +31,20 @@ public partial class ChatDetailPage : ContentPage
             var displayName = cleanSeller.Equals("mariasantos", StringComparison.OrdinalIgnoreCase) ? "Maria Santos" :
                               cleanSeller.Equals("matchabykai", StringComparison.OrdinalIgnoreCase) ? "Kai dela Cruz" : cleanSeller;
 
+            targetSellerName = displayName;
+            targetSellerId = p.SellerId > 0 ? p.SellerId : (cleanSeller.ToLower().Contains("maria") ? 1 : (cleanSeller.ToLower().Contains("kai") ? 2 : 1));
+
             ChatUserName.Text = $"{displayName} (@{cleanSeller.ToLower()})";
             ChatAvatar.Source = cleanSeller.ToLower().Contains("maria") ? "profile_sdada.jpg" : "kai_avatar.jpg";
             ProductThumb.Source = p.ImageSource;
             ProductTitleText.Text = $"{p.ProductName} • ₱{p.Price:0.00}";
+        }
+        else
+        {
+            targetSellerName = "Maria Santos";
+            targetSellerId = 1;
+            ChatUserName.Text = "Maria Santos (@mariasantos)";
+            ChatAvatar.Source = "profile_sdada.jpg";
         }
     }
 
@@ -46,7 +57,7 @@ public partial class ChatDetailPage : ContentPage
     void StartRealtimePolling()
     {
         pollTimer = Dispatcher.CreateTimer();
-        pollTimer.Interval = TimeSpan.FromSeconds(6);
+        pollTimer.Interval = TimeSpan.FromSeconds(5);
         pollTimer.Tick += async (s, e) => await PollIncomingMessagesAsync();
         pollTimer.Start();
     }
@@ -62,51 +73,70 @@ public partial class ChatDetailPage : ContentPage
         MessagesLayout.Clear();
         renderedMessageIds.Clear();
 
-        // Fetch from API in background
+        var p = AppState.Instance.CurrentProduct;
+
+        // Fetch or create unique conversation for this specific seller
         try
         {
-            var res = await Task.Run(() => CampusApiService.Instance.GetMessagesAsync(conversationId));
-            if (res?.Messages != null && res.Messages.Count > 0)
+            var res = await Task.Run(() => CampusApiService.Instance.GetOrCreateConversationAsync(
+                targetSellerId,
+                targetSellerName,
+                p?.BackendListingId
+            ));
+
+            if (res != null)
             {
-                MessagesLayout.Add(CreateTimePill("Today"));
-                foreach (var msg in res.Messages)
+                activeConversationId = res.ConversationId;
+
+                if (res.Messages != null && res.Messages.Count > 0)
                 {
-                    renderedMessageIds.Add(msg.Id);
-                    bool isOutgoing = msg.SenderId == (AppState.Instance.CurrentUserId > 0 ? AppState.Instance.CurrentUserId : 1);
-                    if (msg.MessageType == "meetup_card")
+                    MessagesLayout.Add(CreateTimePill("Today"));
+                    foreach (var msg in res.Messages)
                     {
-                        MessagesLayout.Add(CreateMeetupCard("Main Building – Ground Floor Lobby", msg.CreatedAt.ToString("h:mm tt"), msg.Body));
+                        renderedMessageIds.Add(msg.Id);
+                        bool isOutgoing = msg.SenderId == (AppState.Instance.CurrentUserId > 0 ? AppState.Instance.CurrentUserId : 4);
+                        if (msg.MessageType == "meetup_card")
+                        {
+                            MessagesLayout.Add(CreateMeetupCard("Main Building – Ground Floor Lobby", msg.CreatedAt.ToString("h:mm tt"), msg.Body));
+                        }
+                        else
+                        {
+                            MessagesLayout.Add(CreateMessageBubble(msg.Body, msg.CreatedAt.ToString("h:mm tt"), isOutgoing));
+                        }
                     }
-                    else
-                    {
-                        MessagesLayout.Add(CreateMessageBubble(msg.Body, msg.CreatedAt.ToString("h:mm tt"), isOutgoing));
-                    }
+                    await ScrollToBottomAsync();
+                    return;
                 }
-                await ScrollToBottomAsync();
-                return;
             }
         }
         catch { }
 
-        // Product-aware default conversation preview if no messages in DB
-        var p = AppState.Instance.CurrentProduct;
-        var prodName = p?.ProductName ?? "Item";
-
-        MessagesLayout.Add(CreateTimePill("Today"));
-        MessagesLayout.Add(CreateMessageBubble($"Hi! Thanks for checking my listing for {prodName}. Feel free to ask any questions.", "12:06 PM", false));
-        MessagesLayout.Add(CreateMessageBubble($"Hi! Is {prodName} available for campus meetup today?", "12:08 PM", true));
-        MessagesLayout.Add(CreateMessageBubble($"Yes! Available for meetup at the Main Building Ground Floor Lobby.", "12:10 PM", false));
-        MessagesLayout.Add(CreateMeetupCard("Main Building – Ground Floor Lobby", "Today at 2:30 PM", $"Campus handover for {prodName}."));
+        // Clean new conversation start with NO fake messages
+        MessagesLayout.Add(CreateTimePill("New Conversation"));
+        var startCard = new Border
+        {
+            BackgroundColor = (Color)Application.Current!.Resources["InputBackground"],
+            StrokeThickness = 0,
+            StrokeShape = new RoundRectangle { CornerRadius = 14 },
+            Padding = new Thickness(14, 10),
+            Margin = new Thickness(20, 12),
+            HorizontalOptions = LayoutOptions.Center
+        };
+        var stack = new VerticalStackLayout { Spacing = 2, HorizontalOptions = LayoutOptions.Center };
+        stack.Add(new Label { Text = $"Chatting with {targetSellerName}", FontSize = 12, FontAttributes = FontAttributes.Bold, TextColor = (Color)Application.Current!.Resources["TextDark"], HorizontalTextAlignment = TextAlignment.Center });
+        stack.Add(new Label { Text = "Send a message or propose a meetup to arrange campus pickup.", FontSize = 11, TextColor = (Color)Application.Current!.Resources["TextMuted"], HorizontalTextAlignment = TextAlignment.Center });
+        startCard.Content = stack;
+        MessagesLayout.Add(startCard);
     }
 
     async Task PollIncomingMessagesAsync()
     {
-        if (isPolling) return;
+        if (isPolling || activeConversationId == 0) return;
         isPolling = true;
 
         try
         {
-            var res = await Task.Run(() => CampusApiService.Instance.GetMessagesAsync(conversationId));
+            var res = await Task.Run(() => CampusApiService.Instance.GetMessagesAsync(activeConversationId));
             if (res?.Messages != null && res.Messages.Count > 0)
             {
                 bool hasNew = false;
@@ -115,7 +145,7 @@ public partial class ChatDetailPage : ContentPage
                     if (!renderedMessageIds.Contains(msg.Id))
                     {
                         renderedMessageIds.Add(msg.Id);
-                        bool isOutgoing = msg.SenderId == (AppState.Instance.CurrentUserId > 0 ? AppState.Instance.CurrentUserId : 1);
+                        bool isOutgoing = msg.SenderId == (AppState.Instance.CurrentUserId > 0 ? AppState.Instance.CurrentUserId : 4);
                         if (msg.MessageType == "meetup_card")
                         {
                             MessagesLayout.Add(CreateMeetupCard("Main Building – Ground Floor Lobby", msg.CreatedAt.ToString("h:mm tt"), msg.Body));
@@ -259,20 +289,18 @@ public partial class ChatDetailPage : ContentPage
         await ScrollToBottomAsync();
 
         // 2. Concurrently push to backend API
+        var convId = activeConversationId;
         _ = Task.Run(async () =>
         {
             try
             {
-                await CampusApiService.Instance.SendTextMessageAsync(conversationId, text);
+                if (convId > 0)
+                {
+                    await CampusApiService.Instance.SendTextMessageAsync(convId, text);
+                }
             }
             catch { }
         });
-
-        // Trigger simulated live response after 1.8s
-        if (simulatedIncomingStep == 0)
-        {
-            simulatedIncomingStep = 1;
-        }
     }
 
     async void OnQuickChipClicked(object? sender, EventArgs e)
@@ -303,11 +331,15 @@ public partial class ChatDetailPage : ContentPage
         MessagesLayout.Add(meetupCard);
         await ScrollToBottomAsync();
 
+        var convId = activeConversationId;
         _ = Task.Run(async () =>
         {
             try
             {
-                await CampusApiService.Instance.SendMeetupCardAsync(conversationId, 1, DateTime.Now.AddHours(1), $"Pickup at {location}");
+                if (convId > 0)
+                {
+                    await CampusApiService.Instance.SendMeetupCardAsync(convId, 1, DateTime.Now.AddHours(1), $"Pickup at {location}");
+                }
             }
             catch { }
         });

@@ -55,4 +55,40 @@ class ChatController extends Controller
             'message' => $message,
         ], 201);
     }
+
+    public function getOrCreate(Request $request): JsonResponse
+    {
+        $user = $request->user() ?? $request->user('sanctum');
+        $userId = $user ? $user->id : ($request->input('user_id') ? (int)$request->input('user_id') : 1);
+
+        $recipientId = (int)$request->input('recipient_id');
+        $sellerName = $request->input('seller_name');
+        $listingId = $request->input('listing_id') ? (int)$request->input('listing_id') : null;
+
+        if (!$recipientId || $recipientId === $userId) {
+            if (!empty($sellerName)) {
+                $cleanName = trim(str_replace('@', '', $sellerName));
+                $foundUser = \App\Models\User::where('name', 'like', "%{$cleanName}%")
+                    ->orWhere('seller_shop_name', 'like', "%{$cleanName}%")
+                    ->orWhere('email', 'like', "%{$cleanName}%")
+                    ->first();
+                if ($foundUser && $foundUser->id !== $userId) {
+                    $recipientId = $foundUser->id;
+                }
+            }
+        }
+
+        if (!$recipientId || $recipientId === $userId) {
+            $recipientId = $userId === 1 ? 2 : 1;
+        }
+
+        $conversation = $this->chatService->getOrCreateConversation($userId, $recipientId, $listingId);
+        $data = $this->chatService->getMessages($conversation->id, $userId);
+
+        return response()->json([
+            'conversation_id' => $conversation->id,
+            'recipient_id' => $recipientId,
+            'messages' => $data['messages'],
+        ]);
+    }
 }
