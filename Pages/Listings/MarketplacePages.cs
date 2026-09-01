@@ -746,61 +746,43 @@ public class ProductDetailPage : UniPage
 
 public class EditListingPage : UniPage
 {
+    int currentStock = 1;
+    string selectedCategory = "Food & Drinks";
+    string selectedCondition = "Good Condition";
+    string selectedDay = "Monday to Friday";
+    int startHour = 10;
+    string startPeriod = "AM";
+    int endHour = 3;
+    string endPeriod = "PM";
+    string selectedLocation = "Main Building – Ground Floor Lobby";
+
     readonly Entry nameEntry;
     readonly Entry priceEntry;
-    readonly Entry stockEntry;
-    readonly Picker categoryPicker;
-    readonly Picker conditionPicker;
     readonly Editor descEditor;
-    readonly Picker dayPicker;
-    readonly Entry timeEntry;
-    readonly Picker locPicker;
     readonly Editor instructionsEditor;
+    readonly Label stockCountLabel;
+    readonly Label timePreviewLabel;
     readonly List<string> photos = [];
     readonly HorizontalStackLayout photosRow = new() { Spacing = 10 };
     readonly Border addPhotoBtn;
     readonly Label photosCountLabel;
 
+    readonly VerticalStackLayout detailsSection = new() { Spacing = 12 };
+    readonly VerticalStackLayout stockSection = new() { Spacing = 14, IsVisible = false };
+    readonly VerticalStackLayout scheduleSection = new() { Spacing = 12, IsVisible = false };
+
     public EditListingPage()
     {
         var p = State.CurrentProduct ?? new MarketplaceProduct();
+        currentStock = p.Quantity;
+        selectedCategory = p.Category ?? "Food & Drinks";
+        selectedCondition = p.Condition ?? "Good Condition";
+        selectedLocation = p.MeetupLocation ?? "Main Building – Ground Floor Lobby";
 
         nameEntry = new Entry { Text = p.ProductName, TextColor = Text };
         priceEntry = new Entry { Text = p.Price.ToString("0.00"), Keyboard = Keyboard.Numeric, TextColor = Text };
-        stockEntry = new Entry { Text = p.Quantity.ToString(), Keyboard = Keyboard.Numeric, TextColor = Text };
-
-        categoryPicker = new Picker
-        {
-            ItemsSource = new List<string> { "Food & Drinks", "Handmade", "Clothes", "Accessories", "School Supplies", "Other" },
-            SelectedItem = p.Category,
-            TextColor = Text
-        };
-
-        conditionPicker = new Picker
-        {
-            ItemsSource = new List<string> { "Freshly Prepared / Baked", "Brand New", "Like New", "Good Condition", "Made to Order" },
-            SelectedItem = p.Condition,
-            TextColor = Text
-        };
-
-        descEditor = new Editor { Text = p.Description, HeightRequest = 90, TextColor = Text };
-
-        dayPicker = new Picker
-        {
-            ItemsSource = new List<string> { "Monday to Friday", "Monday, Wednesday, Friday", "Tuesday, Thursday", "Everyday" },
-            SelectedIndex = 0,
-            TextColor = Text
-        };
-
-        timeEntry = new Entry { Text = "10:00 AM – 3:00 PM", TextColor = Text };
-        locPicker = new Picker
-        {
-            ItemsSource = new List<string> { "Main Building – Ground Floor Lobby", "Student Activity Center (SAC)", "University Library Entrance", "Campus Plaza Benches" },
-            SelectedItem = p.MeetupLocation ?? "Main Building – Ground Floor Lobby",
-            TextColor = Text
-        };
-
-        instructionsEditor = new Editor { Text = p.PickupInstructions ?? "Meet near the lobby benches or seller booth.", HeightRequest = 70, TextColor = Text };
+        descEditor = new Editor { Text = p.Description, HeightRequest = 80, TextColor = Text };
+        instructionsEditor = new Editor { Text = p.PickupInstructions ?? "Meet near the lobby benches or seller booth.", HeightRequest = 65, TextColor = Text };
 
         if (!string.IsNullOrWhiteSpace(p.ImageSource) && !photos.Contains(p.ImageSource)) photos.Add(p.ImageSource);
         foreach (var img in p.AdditionalImages) { if (!photos.Contains(img)) photos.Add(img); }
@@ -809,48 +791,371 @@ public class EditListingPage : UniPage
         addLbl.HorizontalTextAlignment = TextAlignment.Center;
         addLbl.VerticalTextAlignment = TextAlignment.Center;
         addPhotoBtn = Card(addLbl, 6);
-        addPhotoBtn.HeightRequest = 85;
-        addPhotoBtn.WidthRequest = 85;
+        addPhotoBtn.HeightRequest = 80;
+        addPhotoBtn.WidthRequest = 80;
         var addPhotoTap = new TapGestureRecognizer();
         addPhotoTap.Tapped += PickPhoto;
         addPhotoBtn.GestureRecognizers.Add(addPhotoTap);
 
-        photosCountLabel = L("Photos (Min 1, Max 5)", 13, true);
+        photosCountLabel = L("Photos (Min 1, Max 5)", 12, true, Blue);
 
-        var form = new VerticalStackLayout { Padding = new Thickness(16, 4, 16, 30), Spacing = 14 };
-        form.Add(L("Edit Product & Campus Availability", 19, true));
-        form.Add(L("Update item specifications, price, stock inventory, and handover meetup details.", 12, false, Muted));
+        // --- 1. SEGMENTED SECTION TABS (Details / Stock / Meetup) ---
+        var tabDetailsBtn = new Button { Text = "📦 Details", BackgroundColor = Blue, TextColor = Colors.White, HeightRequest = 36, CornerRadius = 18, FontSize = 11.5, FontAttributes = FontAttributes.Bold, Padding = new Thickness(14, 0) };
+        var tabStockBtn = new Button { Text = "🔢 Stock", BackgroundColor = Colors.Transparent, TextColor = Muted, HeightRequest = 36, CornerRadius = 18, FontSize = 11.5, Padding = new Thickness(14, 0) };
+        var tabScheduleBtn = new Button { Text = "📍 Schedule", BackgroundColor = Colors.Transparent, TextColor = Muted, HeightRequest = 36, CornerRadius = 18, FontSize = 11.5, Padding = new Thickness(14, 0) };
 
-        // Photos Row
-        form.Add(photosCountLabel);
-        form.Add(new ScrollView { Orientation = ScrollOrientation.Horizontal, Content = photosRow });
+        void SwitchSection(Button active)
+        {
+            foreach (var b in new[] { tabDetailsBtn, tabStockBtn, tabScheduleBtn })
+            {
+                b.BackgroundColor = b == active ? Blue : Colors.Transparent;
+                b.TextColor = b == active ? Colors.White : Muted;
+                b.FontAttributes = b == active ? FontAttributes.Bold : FontAttributes.None;
+            }
+            detailsSection.IsVisible = active == tabDetailsBtn;
+            stockSection.IsVisible = active == tabStockBtn;
+            scheduleSection.IsVisible = active == tabScheduleBtn;
+        }
+
+        tabDetailsBtn.Clicked += (_, _) => SwitchSection(tabDetailsBtn);
+        tabStockBtn.Clicked += (_, _) => SwitchSection(tabStockBtn);
+        tabScheduleBtn.Clicked += (_, _) => SwitchSection(tabScheduleBtn);
+
+        var sectionTabs = new HorizontalStackLayout { Spacing = 8, HorizontalOptions = LayoutOptions.Center };
+        sectionTabs.Add(tabDetailsBtn);
+        sectionTabs.Add(tabStockBtn);
+        sectionTabs.Add(tabScheduleBtn);
+
+        // ================= SECTION 1: PRODUCT DETAILS =================
+        detailsSection.Add(photosCountLabel);
+        detailsSection.Add(new ScrollView { Orientation = ScrollOrientation.Horizontal, Content = photosRow });
         RefreshPhotos();
 
-        // Product Details
-        form.Add(Field("Product Name / Title *", nameEntry));
+        detailsSection.Add(Field("Product Name / Title *", nameEntry));
+        detailsSection.Add(Field("Price (₱) *", priceEntry));
 
-        var grid2 = new Grid { ColumnDefinitions = Cols("*,*"), ColumnSpacing = 10 };
-        grid2.Add(Field("Price (₱) *", priceEntry));
-        grid2.Add(Field("Stock Quantity *", stockEntry), 1);
-        form.Add(grid2);
+        // Category Chips
+        detailsSection.Add(L("Category", 12, true));
+        var catChips = new HorizontalStackLayout { Spacing = 8 };
+        var categories = new[] { "Food & Drinks", "Handmade", "Clothes", "Accessories", "Other" };
+        foreach (var cat in categories)
+        {
+            var btn = new Button
+            {
+                Text = cat,
+                HeightRequest = 32,
+                CornerRadius = 16,
+                FontSize = 11,
+                Padding = new Thickness(12, 0),
+                BackgroundColor = cat == selectedCategory ? Blue : (Color)Application.Current!.Resources["InputBackground"],
+                TextColor = cat == selectedCategory ? Colors.White : Text
+            };
+            btn.Clicked += async (_, _) =>
+            {
+                await btn.ScaleToAsync(0.92, 50, Easing.CubicOut);
+                await btn.ScaleToAsync(1.0, 60, Easing.CubicIn);
+                selectedCategory = cat;
+                foreach (var child in catChips.Children.OfType<Button>())
+                {
+                    child.BackgroundColor = child.Text == selectedCategory ? Blue : (Color)Application.Current!.Resources["InputBackground"];
+                    child.TextColor = child.Text == selectedCategory ? Colors.White : Text;
+                }
+            };
+            catChips.Add(btn);
+        }
+        detailsSection.Add(new ScrollView { Orientation = ScrollOrientation.Horizontal, Content = catChips });
 
-        form.Add(Field("Category", categoryPicker));
-        form.Add(Field("Item Condition", conditionPicker));
-        form.Add(Field("Description", descEditor));
+        // Condition Chips
+        detailsSection.Add(L("Item Condition", 12, true));
+        var condChips = new HorizontalStackLayout { Spacing = 8 };
+        var conditions = new[] { "Brand New", "Like New", "Good Condition", "Freshly Prepared / Baked", "Made to Order" };
+        foreach (var cond in conditions)
+        {
+            var btn = new Button
+            {
+                Text = cond,
+                HeightRequest = 32,
+                CornerRadius = 16,
+                FontSize = 11,
+                Padding = new Thickness(12, 0),
+                BackgroundColor = cond == selectedCondition ? Blue : (Color)Application.Current!.Resources["InputBackground"],
+                TextColor = cond == selectedCondition ? Colors.White : Text
+            };
+            btn.Clicked += async (_, _) =>
+            {
+                await btn.ScaleToAsync(0.92, 50, Easing.CubicOut);
+                await btn.ScaleToAsync(1.0, 60, Easing.CubicIn);
+                selectedCondition = cond;
+                foreach (var child in condChips.Children.OfType<Button>())
+                {
+                    child.BackgroundColor = child.Text == selectedCondition ? Blue : (Color)Application.Current!.Resources["InputBackground"];
+                    child.TextColor = child.Text == selectedCondition ? Colors.White : Text;
+                }
+            };
+            condChips.Add(btn);
+        }
+        detailsSection.Add(new ScrollView { Orientation = ScrollOrientation.Horizontal, Content = condChips });
+        detailsSection.Add(Field("Description", descEditor));
 
-        // Schedule & Meetup
-        form.Add(L("Campus Schedule & Location", 15, true, Blue));
-        form.Add(Field("Selling Days", dayPicker));
-        form.Add(Field("Handover Time Window", timeEntry));
-        form.Add(Field("Campus Meetup Location", locPicker));
-        form.Add(Field("Pickup Instructions", instructionsEditor));
+        // ================= SECTION 2: STOCK INVENTORY STEPPER =================
+        stockCountLabel = L(currentStock.ToString(), 32, true, Blue);
+        stockCountLabel.HorizontalOptions = LayoutOptions.Center;
 
-        // Save Button
+        var minusBtn = new Border
+        {
+            BackgroundColor = (Color)Application.Current!.Resources["InputBackground"],
+            Stroke = Line,
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = 24 },
+            HeightRequest = 48,
+            WidthRequest = 48
+        };
+        var minusLbl = L("−", 26, true, Text);
+        minusLbl.HorizontalOptions = LayoutOptions.Center; minusLbl.VerticalOptions = LayoutOptions.Center;
+        minusBtn.Content = minusLbl;
+        var minusTap = new TapGestureRecognizer();
+        minusTap.Tapped += async (_, _) =>
+        {
+            await minusBtn.ScaleToAsync(0.85, 60, Easing.CubicOut);
+            if (currentStock > 0) currentStock--;
+            stockCountLabel.Text = currentStock.ToString();
+            await minusBtn.ScaleToAsync(1.0, 70, Easing.CubicIn);
+        };
+        minusBtn.GestureRecognizers.Add(minusTap);
+
+        var plusBtn = new Border
+        {
+            BackgroundColor = Blue,
+            StrokeThickness = 0,
+            StrokeShape = new RoundRectangle { CornerRadius = 24 },
+            HeightRequest = 48,
+            WidthRequest = 48,
+            Shadow = new Shadow { Brush = Color.FromArgb("#2563EB"), Offset = new Point(0, 3), Radius = 8, Opacity = 0.3f }
+        };
+        var plusLbl = L("+", 24, true, Colors.White);
+        plusLbl.HorizontalOptions = LayoutOptions.Center; plusLbl.VerticalOptions = LayoutOptions.Center;
+        plusBtn.Content = plusLbl;
+        var plusTap = new TapGestureRecognizer();
+        plusTap.Tapped += async (_, _) =>
+        {
+            await plusBtn.ScaleToAsync(0.85, 60, Easing.CubicOut);
+            currentStock++;
+            stockCountLabel.Text = currentStock.ToString();
+            await plusBtn.ScaleToAsync(1.0, 70, Easing.CubicIn);
+        };
+        plusBtn.GestureRecognizers.Add(plusTap);
+
+        var stepperRow = new Grid { ColumnDefinitions = Cols("Auto,*,Auto"), ColumnSpacing = 16, HorizontalOptions = LayoutOptions.Center, WidthRequest = 220 };
+        stepperRow.Add(minusBtn, 0);
+        
+        var stockStack = new VerticalStackLayout { VerticalOptions = LayoutOptions.Center, HorizontalOptions = LayoutOptions.Center };
+        stockStack.Add(stockCountLabel);
+        stockStack.Add(L("Units in Stock", 11, false, Muted));
+        stepperRow.Add(stockStack, 1);
+        
+        stepperRow.Add(plusBtn, 2);
+
+        var stockCard = Card(new VerticalStackLayout
+        {
+            Spacing = 14,
+            Padding = 16,
+            Children =
+            {
+                L("Inventory Management", 16, true),
+                L("Tap + or − to adjust current items ready for campus handover.", 11.5, false, Muted),
+                stepperRow
+            }
+        });
+        stockSection.Add(stockCard);
+
+        // Quick Preset Buttons
+        var presets = new[] { 0, 3, 5, 10, 20 };
+        var presetRow = new HorizontalStackLayout { Spacing = 8, HorizontalOptions = LayoutOptions.Center };
+        foreach (var qty in presets)
+        {
+            var pBtn = new Button
+            {
+                Text = qty == 0 ? "0 (Sold Out)" : $"+{qty}",
+                HeightRequest = 32,
+                CornerRadius = 16,
+                FontSize = 11,
+                BackgroundColor = (Color)Application.Current!.Resources["InputBackground"],
+                TextColor = Text
+            };
+            pBtn.Clicked += async (_, _) =>
+            {
+                await pBtn.ScaleToAsync(0.9, 50, Easing.CubicOut);
+                currentStock = qty == 0 ? 0 : currentStock + qty;
+                stockCountLabel.Text = currentStock.ToString();
+                await pBtn.ScaleToAsync(1.0, 60, Easing.CubicIn);
+            };
+            presetRow.Add(pBtn);
+        }
+        stockSection.Add(presetRow);
+
+        // ================= SECTION 3: SCHEDULE & MEETUP =================
+        // Selling Days Chips
+        scheduleSection.Add(L("Selling Days on Campus", 12, true));
+        var dayChips = new HorizontalStackLayout { Spacing = 8 };
+        var daysList = new[] { "Monday to Friday", "Monday, Wednesday, Friday", "Tuesday, Thursday", "Everyday" };
+        foreach (var d in daysList)
+        {
+            var btn = new Button
+            {
+                Text = d,
+                HeightRequest = 32,
+                CornerRadius = 16,
+                FontSize = 11,
+                Padding = new Thickness(12, 0),
+                BackgroundColor = d == selectedDay ? Blue : (Color)Application.Current!.Resources["InputBackground"],
+                TextColor = d == selectedDay ? Colors.White : Text
+            };
+            btn.Clicked += async (_, _) =>
+            {
+                await btn.ScaleToAsync(0.92, 50, Easing.CubicOut);
+                await btn.ScaleToAsync(1.0, 60, Easing.CubicIn);
+                selectedDay = d;
+                foreach (var child in dayChips.Children.OfType<Button>())
+                {
+                    child.BackgroundColor = child.Text == selectedDay ? Blue : (Color)Application.Current!.Resources["InputBackground"];
+                    child.TextColor = child.Text == selectedDay ? Colors.White : Text;
+                }
+            };
+            dayChips.Add(btn);
+        }
+        scheduleSection.Add(new ScrollView { Orientation = ScrollOrientation.Horizontal, Content = dayChips });
+
+        // Time Range with AM/PM and Hour Steppers
+        timePreviewLabel = L($"{startHour:00}:00 {startPeriod} – {endHour:00}:00 {endPeriod}", 14, true, Blue);
+        timePreviewLabel.HorizontalOptions = LayoutOptions.Center;
+
+        var startHourLabel = L($"{startHour:00}", 16, true);
+        var endHourLabel = L($"{endHour:00}", 16, true);
+
+        View CreateHourControl(string label, Label valLbl, Action<int> onDelta, Func<string> getPeriod, Action<string> setPeriod)
+        {
+            var minus = new Button { Text = "▼", HeightRequest = 30, WidthRequest = 30, CornerRadius = 15, Padding = 0, BackgroundColor = (Color)Application.Current!.Resources["InputBackground"], TextColor = Text };
+            var plus = new Button { Text = "▲", HeightRequest = 30, WidthRequest = 30, CornerRadius = 15, Padding = 0, BackgroundColor = (Color)Application.Current!.Resources["InputBackground"], TextColor = Text };
+            
+            minus.Clicked += (_, _) => { onDelta(-1); UpdateTimePreview(); };
+            plus.Clicked += (_, _) => { onDelta(1); UpdateTimePreview(); };
+
+            var amBtn = new Button { Text = "AM", HeightRequest = 28, WidthRequest = 42, CornerRadius = 14, Padding = 0, FontSize = 10, FontAttributes = FontAttributes.Bold, BackgroundColor = getPeriod() == "AM" ? Blue : Colors.Transparent, TextColor = getPeriod() == "AM" ? Colors.White : Muted };
+            var pmBtn = new Button { Text = "PM", HeightRequest = 28, WidthRequest = 42, CornerRadius = 14, Padding = 0, FontSize = 10, FontAttributes = FontAttributes.Bold, BackgroundColor = getPeriod() == "PM" ? Blue : Colors.Transparent, TextColor = getPeriod() == "PM" ? Colors.White : Muted };
+
+            amBtn.Clicked += (_, _) => { setPeriod("AM"); amBtn.BackgroundColor = Blue; amBtn.TextColor = Colors.White; pmBtn.BackgroundColor = Colors.Transparent; pmBtn.TextColor = Muted; UpdateTimePreview(); };
+            pmBtn.Clicked += (_, _) => { setPeriod("PM"); pmBtn.BackgroundColor = Blue; pmBtn.TextColor = Colors.White; amBtn.BackgroundColor = Colors.Transparent; amBtn.TextColor = Muted; UpdateTimePreview(); };
+
+            var stack = new VerticalStackLayout { Spacing = 6, HorizontalOptions = LayoutOptions.Center };
+            stack.Add(L(label, 11, true, Muted));
+            
+            var hourRow = new HorizontalStackLayout { Spacing = 6, HorizontalOptions = LayoutOptions.Center };
+            hourRow.Add(minus);
+            valLbl.VerticalOptions = LayoutOptions.Center;
+            hourRow.Add(valLbl);
+            hourRow.Add(plus);
+            stack.Add(hourRow);
+
+            var periodRow = new HorizontalStackLayout { Spacing = 4, HorizontalOptions = LayoutOptions.Center };
+            periodRow.Add(amBtn);
+            periodRow.Add(pmBtn);
+            stack.Add(periodRow);
+
+            return Card(stack, 10);
+        }
+
+        void UpdateTimePreview()
+        {
+            startHourLabel.Text = $"{startHour:00}";
+            endHourLabel.Text = $"{endHour:00}";
+            timePreviewLabel.Text = $"{startHour:00}:00 {startPeriod} – {endHour:00}:00 {endPeriod}";
+        }
+
+        var startPicker = CreateHourControl("From (Start)", startHourLabel, delta => { startHour = Math.Clamp(startHour + delta, 1, 12); }, () => startPeriod, p => startPeriod = p);
+        var endPicker = CreateHourControl("To (End)", endHourLabel, delta => { endHour = Math.Clamp(endHour + delta, 1, 12); }, () => endPeriod, p => endPeriod = p);
+
+        var timeGrid = new Grid { ColumnDefinitions = Cols("*,*"), ColumnSpacing = 10 };
+        timeGrid.Add(startPicker, 0);
+        timeGrid.Add(endPicker, 1);
+
+        var timeCard = Card(new VerticalStackLayout
+        {
+            Spacing = 10,
+            Padding = 12,
+            Children =
+            {
+                L("Handover Time Window", 13, true),
+                timeGrid,
+                timePreviewLabel
+            }
+        });
+        scheduleSection.Add(timeCard);
+
+        // Location Chips
+        scheduleSection.Add(L("Campus Pickup Location", 12, true));
+        var locChips = new HorizontalStackLayout { Spacing = 8 };
+        var locations = new[] { "Main Building – Ground Floor Lobby", "Student Activity Center (SAC)", "University Library Entrance", "Campus Plaza Benches" };
+        foreach (var loc in locations)
+        {
+            var btn = new Button
+            {
+                Text = loc,
+                HeightRequest = 32,
+                CornerRadius = 16,
+                FontSize = 11,
+                Padding = new Thickness(12, 0),
+                BackgroundColor = loc == selectedLocation ? Blue : (Color)Application.Current!.Resources["InputBackground"],
+                TextColor = loc == selectedLocation ? Colors.White : Text
+            };
+            btn.Clicked += async (_, _) =>
+            {
+                await btn.ScaleToAsync(0.92, 50, Easing.CubicOut);
+                await btn.ScaleToAsync(1.0, 60, Easing.CubicIn);
+                selectedLocation = loc;
+                foreach (var child in locChips.Children.OfType<Button>())
+                {
+                    child.BackgroundColor = child.Text == selectedLocation ? Blue : (Color)Application.Current!.Resources["InputBackground"];
+                    child.TextColor = child.Text == selectedLocation ? Colors.White : Text;
+                }
+            };
+            locChips.Add(btn);
+        }
+        scheduleSection.Add(new ScrollView { Orientation = ScrollOrientation.Horizontal, Content = locChips });
+        scheduleSection.Add(Field("Pickup Instructions", instructionsEditor));
+
+        // ================= ROOT ASSEMBLE =================
+        var form = new VerticalStackLayout { Padding = new Thickness(16, 8, 16, 20), Spacing = 14 };
+        form.Add(sectionTabs);
+        form.Add(detailsSection);
+        form.Add(stockSection);
+        form.Add(scheduleSection);
+
+        // Sticky Bottom Save Action
         var saveBtn = Btn("Save Changes ✓", OnSaveChanges);
-        saveBtn.HeightRequest = 50;
-        form.Add(saveBtn);
+        saveBtn.HeightRequest = 48;
+        saveBtn.Margin = new Thickness(16, 6, 16, 12);
 
-        SetPage("Edit Listing", new ScrollView { Content = form });
+        var root = new Grid
+        {
+            RowDefinitions = new RowDefinitionCollection
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star },
+                new RowDefinition { Height = GridLength.Auto }
+            }
+        };
+
+        Grid.SetRow(Header("Edit Listing & Stock"), 0);
+        root.Add(Header("Edit Listing & Stock"));
+
+        var scrollView = new ScrollView { Content = form };
+        Grid.SetRow(scrollView, 1);
+        root.Add(scrollView);
+
+        Grid.SetRow(saveBtn, 2);
+        root.Add(saveBtn);
+
+        Content = root;
     }
 
     void RefreshPhotos()
@@ -858,7 +1163,7 @@ public class EditListingPage : UniPage
         photosRow.Children.Clear();
         foreach (var ph in photos.ToList())
         {
-            var cell = new Grid { HeightRequest = 85, WidthRequest = 85 };
+            var cell = new Grid { HeightRequest = 80, WidthRequest = 80 };
             var img = new Image
             {
                 Source = ph.StartsWith("http") || ph.EndsWith(".jpg") || ph.EndsWith(".png") ? ImageSource.FromFile(ph) : ImageSource.FromFile(ph),
@@ -929,22 +1234,16 @@ public class EditListingPage : UniPage
             return;
         }
 
-        if (!int.TryParse(stockEntry.Text, out int parsedStock) || parsedStock < 0)
-        {
-            await Shell.Current.DisplayAlert("Invalid Stock", "Please enter a valid stock quantity.", "OK");
-            return;
-        }
-
         var p = State.CurrentProduct;
         if (p != null)
         {
             p.ProductName = nameEntry.Text.Trim();
             p.Price = parsedPrice;
-            p.Quantity = parsedStock;
-            p.Category = categoryPicker.SelectedItem?.ToString() ?? "Campus Item";
-            p.Condition = conditionPicker.SelectedItem?.ToString() ?? "Good Condition";
+            p.Quantity = currentStock;
+            p.Category = selectedCategory;
+            p.Condition = selectedCondition;
             p.Description = descEditor.Text?.Trim() ?? "";
-            p.MeetupLocation = locPicker.SelectedItem?.ToString() ?? "Main Building – Ground Floor Lobby";
+            p.MeetupLocation = selectedLocation;
             p.PickupInstructions = instructionsEditor.Text?.Trim() ?? "";
             if (photos.Count > 0)
             {
