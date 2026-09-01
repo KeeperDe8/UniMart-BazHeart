@@ -64,12 +64,17 @@ public partial class ProfilePage : ContentPage
 
     private async void OnApplySellerClicked(object? sender, EventArgs e)
     {
+        var userName = Services.AppState.Instance.CurrentUserName;
+        var shopName = $"{userName}'s Campus Shop";
+        var bio = "Student seller at NU Lipa Campus";
+
         try
         {
-            await Services.Api.CampusApiService.Instance.ApplySellerAsync();
+            await Services.Api.CampusApiService.Instance.ApplySellerAsync(shopName, bio);
         }
         catch { }
 
+        Services.AppState.Instance.CurrentRole = "StudentSeller";
         Services.AppState.Instance.IsSellerApproved = true;
         isSeller = true;
         UpdateModeUI();
@@ -79,9 +84,9 @@ public partial class ProfilePage : ContentPage
             if (Shell.Current is not null)
             {
                 await Shell.Current.DisplayAlert(
-                    "Verification Approved",
-                    "Your Student Seller account is approved! The '+' Create Listing button is now visible on your bottom bar.",
-                    "Get Started"
+                    "Seller Account Approved! ✨",
+                    "Your Student Seller account is now active. The '+' Create Listing button has been unlocked on your bottom navigation bar!",
+                    "Start Listing"
                 );
             }
         });

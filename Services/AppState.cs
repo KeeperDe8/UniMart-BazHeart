@@ -30,6 +30,10 @@ public class AppState
     public string PreferredMeetupArea { get; set; } = "Main Building – Ground Floor Lobby";
     public bool ShowLogoutMessage { get; set; }
 
+    public bool IsSeller => CurrentRole.Equals("StudentSeller", StringComparison.OrdinalIgnoreCase) 
+                         || CurrentRole.Equals("seller", StringComparison.OrdinalIgnoreCase) 
+                         || IsSellerApproved;
+
     public bool IsSellerApproved
     {
         get => Preferences.Default.Get("is_seller_approved", false);
@@ -37,9 +41,11 @@ public class AppState
         {
             Preferences.Default.Set("is_seller_approved", value);
             SellerApprovalChanged?.Invoke(this, EventArgs.Empty);
+            RoleChanged?.Invoke(this, EventArgs.Empty);
         }
     }
     public event EventHandler? SellerApprovalChanged;
+    public event EventHandler? RoleChanged;
 
     public void SaveSession(string token, string name, string email, string role, int userId = 0, string? shopName = null, string? bio = null, string? meetupArea = null)
     {

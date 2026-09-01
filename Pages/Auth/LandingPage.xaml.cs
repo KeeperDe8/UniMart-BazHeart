@@ -79,9 +79,107 @@ public partial class LandingPage : ContentPage
         ConfirmEyeBtn.Text = ConfirmPassword.IsPassword ? "👁" : "🙈";
     }
 
+    private string pendingEmail = "";
+    private AuthResponse? pendingAuthResponse;
+
     private async void OnForgotTapped(object? s, TappedEventArgs e)
     {
-        await DisplayAlertAsync("Forgot Password", "Enter your email to receive an OTP verification code for password reset.", "OK");
+        var email = LoginEmail.Text?.Trim();
+        if (ValidEmail(email))
+        {
+            try
+            {
+                await CampusApiService.Instance.SendOtpAsync(email!);
+                pendingEmail = email!;
+                ShowOtp(email!);
+                await DisplayAlertAsync("Reset Code Sent", $"We sent a verification code to {email}.", "OK");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlertAsync("Error", ex.Message, "OK");
+            }
+        }
+        else
+        {
+            await DisplayAlertAsync("Forgot Password", "Enter your email address in the email field first to receive a verification code.", "OK");
+        }
+    }
+
+    private void ShowOtp(string email)
+    {
+        pendingEmail = email;
+        LoginPanel.IsVisible = false;
+        RegisterPanel.IsVisible = false;
+        OtpPanel.IsVisible = true;
+        OtpSubtitle.Text = $"We sent a 6-digit verification code to {email}. Check your email inbox.";
+        OtpInput.Text = "";
+    }
+
+    private void OnBackToLoginFromOtp(object? s, EventArgs e)
+    {
+        OtpPanel.IsVisible = false;
+        ShowLogin();
+    }
+
+    private async void OnResendOtpTapped(object? s, TappedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(pendingEmail)) return;
+        try
+        {
+            await CampusApiService.Instance.SendOtpAsync(pendingEmail);
+            await DisplayAlertAsync("Code Resent", $"A new verification code was sent to {pendingEmail}.", "OK");
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Error", ex.Message, "OK");
+        }
+    }
+
+    private async void OnVerifyOtpClicked(object? s, EventArgs e)
+    {
+        var code = OtpInput.Text?.Trim();
+        if (string.IsNullOrWhiteSpace(code) || code.Length != 6)
+        {
+            await DisplayAlertAsync("Invalid Code", "Please enter the 6-digit verification code.", "OK");
+            return;
+        }
+
+        VerifyOtpButton.IsEnabled = false;
+        try
+        {
+            var verified = await CampusApiService.Instance.VerifyOtpAsync(pendingEmail, code);
+            if (verified)
+            {
+                if (pendingAuthResponse?.User != null && !string.IsNullOrWhiteSpace(pendingAuthResponse.Token))
+                {
+                    AppState.Instance.SaveSession(
+                        pendingAuthResponse.Token,
+                        pendingAuthResponse.User.Name,
+                        pendingAuthResponse.User.Email,
+                        pendingAuthResponse.User.Role == "seller" ? "StudentSeller" : "Buyer",
+                        pendingAuthResponse.User.Id,
+                        pendingAuthResponse.User.SellerShopName,
+                        pendingAuthResponse.User.SellerBio,
+                        pendingAuthResponse.User.PreferredMeetupArea
+                    );
+                }
+
+                await DisplayAlertAsync("Verified ✓", "Your email has been verified. Welcome to BazHeart!", "Enter Marketplace");
+                EnterApp();
+            }
+            else
+            {
+                await DisplayAlertAsync("Verification Failed", "The code you entered is invalid or has expired.", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Verification Error", ex.Message, "OK");
+        }
+        finally
+        {
+            VerifyOtpButton.IsEnabled = true;
+        }
     }
 
     private async void OnLoginClicked(object? s, EventArgs e)
@@ -99,6 +197,15 @@ public partial class LandingPage : ContentPage
         try
         {
             var res = await CampusApiService.Instance.LoginAsync(email, password);
+            if (res?.RequiresOtp == true)
+            {
+                pendingEmail = email;
+                pendingAuthResponse = res;
+                ShowOtp(email);
+                await DisplayAlertAsync("Email Verification Required", "Please enter the 6-digit code sent to your email to verify your account.", "OK");
+                return;
+            }
+
             if (res?.User != null && !string.IsNullOrWhiteSpace(res.Token))
             {
                 AppState.Instance.SaveSession(
@@ -176,21 +283,10 @@ public partial class LandingPage : ContentPage
 
             if (res?.User != null && !string.IsNullOrWhiteSpace(res.Token))
             {
-                AppState.Instance.SaveSession(
-                    res.Token,
-                    name!,
-                    email!,
-                    sellerRole ? "StudentSeller" : "Buyer",
-                    res.User.Id,
-                    SellerName.Text,
-                    SellerBio.Text,
-                    MeetupArea.SelectedItem?.ToString()
-                );
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    await DisplayAlertAsync("Account created", "Welcome to UniMart!", "Continue");
-                });
-                EnterApp();
+                pendingEmail = email;
+                pendingAuthResponse = res;
+                ShowOtp(email);
+                await DisplayAlertAsync("Account Created!", $"We sent a 6-digit verification code to {email}. Please enter it below to activate your account.", "OK");
             }
             else
             {
@@ -209,14 +305,6 @@ public partial class LandingPage : ContentPage
 
     private static bool ValidEmail(string? email) =>
         !string.IsNullOrWhiteSpace(email) && email.Contains('@') && email.Contains('.');
-
-    private static void SetIdentity(string name, string email, string role)
-    {
-        var state = AppState.Instance;
-        state.CurrentUserName = name;
-        state.CurrentEmail = email;
-        state.CurrentRole = role;
-    }
 
     private void EnterApp()
     {

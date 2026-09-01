@@ -32,6 +32,7 @@ Route::post('/listings', [ListingController::class, 'store']);
 Route::post('/listings/{id}/paymongo-link', [PaymentController::class, 'createPaymongoLink']);
 Route::post('/listings/{id}/pay-fee', [PaymentController::class, 'payFee']);
 Route::match(['get', 'post'], '/listings/{id}/check-payment', [PaymentController::class, 'checkPaymentStatus']);
+Route::post('/webhooks/paymongo', [PaymentController::class, 'handleWebhook']);
 Route::get('/seller/my-listings', [ListingController::class, 'mySellerListings']);
 
 // Schedules

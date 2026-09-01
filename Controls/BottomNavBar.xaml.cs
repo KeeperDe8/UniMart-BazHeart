@@ -13,6 +13,7 @@ public partial class BottomNavBar : ContentView
         UpdateAppearance();
         Services.ThemeManager.ThemeChanged += (_, _) => UpdateAppearance();
         Services.AppState.Instance.SellerApprovalChanged += (_, _) => UpdateAppearance();
+        Services.AppState.Instance.RoleChanged += (_, _) => UpdateAppearance();
     }
 
     static void OnActiveTabChanged(BindableObject bindable, object oldValue, object newValue) => ((BottomNavBar)bindable).UpdateAppearance();
@@ -26,10 +27,10 @@ public partial class BottomNavBar : ContentView
         MessageBadge.IsVisible = !string.Equals(ActiveTab, "Messages", StringComparison.OrdinalIgnoreCase);
 
         // Only show '+' create listing button if account is an approved seller!
-        bool isApproved = Services.AppState.Instance.IsSellerApproved;
+        bool isSeller = Services.AppState.Instance.IsSeller;
         if (CreateButtonContainer is not null)
         {
-            CreateButtonContainer.IsVisible = isApproved;
+            CreateButtonContainer.IsVisible = isSeller;
         }
     }
 

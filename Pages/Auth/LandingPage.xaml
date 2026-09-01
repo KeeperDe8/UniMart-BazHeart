@@ -166,6 +166,47 @@
 
                     <Button x:Name="CreateButton" Text="Create Account" Clicked="OnCreateClicked" BackgroundColor="{DynamicResource PrimaryBlue}" TextColor="White" HeightRequest="52" CornerRadius="18" FontAttributes="Bold"/>
                 </VerticalStackLayout>
+
+                <!-- OTP VERIFICATION PANEL -->
+                <VerticalStackLayout x:Name="OtpPanel" IsVisible="False" Spacing="16">
+                    <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource PrimaryBlue}" StrokeThickness="1.5" StrokeShape="RoundRectangle 24" Padding="20"
+                            Shadow="{OnPlatform Default={Shadow Brush='#000000', Offset='0,4', Radius=16, Opacity=0.15}}">
+                        <VerticalStackLayout Spacing="14">
+                            <Border BackgroundColor="#1E3A8A" StrokeThickness="0" StrokeShape="RoundRectangle 24" HeightRequest="48" WidthRequest="48" HorizontalOptions="Center">
+                                <Label Text="✉" FontSize="22" TextColor="#38BDF8" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+
+                            <Label Text="Verify Your Email" FontSize="22" FontAttributes="Bold" TextColor="{DynamicResource TextDark}" HorizontalOptions="Center"/>
+                            <Label x:Name="OtpSubtitle" Text="Enter the 6-digit verification code sent to your email address." FontSize="12.5" TextColor="{DynamicResource TextMuted}" HorizontalTextAlignment="Center"/>
+
+                            <Label Text="6-Digit Verification Code" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                            <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource PrimaryBlue}" StrokeThickness="2" StrokeShape="RoundRectangle 16" Padding="12,0">
+                                <Entry x:Name="OtpInput"
+                                       Placeholder="123456"
+                                       PlaceholderColor="{DynamicResource MutedText}"
+                                       TextColor="{DynamicResource PrimaryBlue}"
+                                       FontSize="24"
+                                       FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center"
+                                       Keyboard="Numeric"
+                                       MaxLength="6"/>
+                            </Border>
+
+                            <Button x:Name="VerifyOtpButton" Text="Verify &amp; Continue →" Clicked="OnVerifyOtpClicked" BackgroundColor="{DynamicResource PrimaryBlue}" TextColor="White" HeightRequest="50" CornerRadius="16" FontAttributes="Bold"/>
+
+                            <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                                <Label Text="Didn't get the code?" FontSize="12" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center"/>
+                                <Label x:Name="ResendOtpBtn" Text="Resend Code" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource PrimaryBlue}" VerticalOptions="Center">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnResendOtpTapped"/>
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </HorizontalStackLayout>
+
+                            <Button Text="‹ Back to Login" Clicked="OnBackToLoginFromOtp" BackgroundColor="Transparent" TextColor="{DynamicResource TextMuted}" FontSize="12" HeightRequest="36"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
             </VerticalStackLayout>
         </ScrollView>
     </Grid>

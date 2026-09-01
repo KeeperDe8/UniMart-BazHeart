@@ -209,6 +209,10 @@ public class AuthResponse
     public string Message { get; set; } = "";
     public string Token { get; set; } = "";
     public ApiUser? User { get; set; }
+    [JsonPropertyName("requires_otp")]
+    public bool RequiresOtp { get; set; }
+    [JsonPropertyName("is_verified")]
+    public bool IsVerified { get; set; }
 }
 
 public class ApiUser
