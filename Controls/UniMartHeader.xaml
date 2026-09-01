@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FinalProject.Controls.UniMartHeader">
+    <Grid ColumnDefinitions="*,Auto,Auto" Padding="2,6,2,8" HeightRequest="56">
+        <!-- Logo & Brand Text (BazHeart) -->
+        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+            <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="36" WidthRequest="36" Padding="2">
+                <Image Source="bazheart_logo.png" Aspect="AspectFit"/>
+            </Border>
+            <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                    <Label Text="Baz" FontSize="21" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                    <Label Text="Heart" FontSize="21" FontAttributes="Bold" TextColor="{DynamicResource PrimaryBlue}" Margin="-4,0,0,0"/>
+                    <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 6" Padding="5,2" VerticalOptions="Center">
+                        <Label Text="NU LIPA" FontSize="8.5" FontAttributes="Bold" CharacterSpacing="0.8" TextColor="{DynamicResource PrimaryBlue}"/>
+                    </Border>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </HorizontalStackLayout>
+
+        <!-- Right Action Buttons (Search & Notifications) -->
+        <Grid Grid.Column="1" HeightRequest="38" WidthRequest="38" Margin="0,0,8,0" VerticalOptions="Center">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnSearchTapped"/>
+            </Grid.GestureRecognizers>
+            <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeThickness="1" StrokeShape="RoundRectangle 19"
+                    Shadow="{OnPlatform Default={Shadow Brush='#000000', Offset='0,2', Radius=8, Opacity=0.08}}">
+                <Label Text="⌕" FontSize="20" TextColor="{DynamicResource TextDark}" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,-2,0,0"/>
+            </Border>
+        </Grid>
+
+        <Grid Grid.Column="2" HeightRequest="38" WidthRequest="38" VerticalOptions="Center">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnMessagesTapped"/>
+            </Grid.GestureRecognizers>
+            <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeThickness="1" StrokeShape="RoundRectangle 19"
+                    Shadow="{OnPlatform Default={Shadow Brush='#000000', Offset='0,2', Radius=8, Opacity=0.08}}">
+                <Label Text="✉" FontSize="16" TextColor="{DynamicResource TextDark}" HorizontalOptions="Center" VerticalOptions="Center"/>
+            </Border>
+            <Ellipse Fill="{DynamicResource DangerRed}" HeightRequest="8" WidthRequest="8" HorizontalOptions="End" VerticalOptions="Start" Margin="0,2,2,0"/>
+        </Grid>
+    </Grid>
+</ContentView>

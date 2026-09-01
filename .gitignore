@@ -1,0 +1,33 @@
+# Visual Studio / .NET
+.vs/
+bin/
+obj/
+*.user
+*.userprefs
+*.suo
+*.ide
+*.sln.docstates
+
+# MAUI / Android / iOS Build artifacts
+*.apk
+*.aab
+*.dex
+*.keystore
+
+# Laravel Backend
+backend/vendor/
+backend/node_modules/
+backend/.env
+backend/.phpunit.result.cache
+backend/storage/logs/*.log
+backend/storage/framework/cache/*
+!backend/storage/framework/cache/.gitignore
+backend/storage/framework/sessions/*
+!backend/storage/framework/sessions/.gitignore
+backend/storage/framework/views/*
+!backend/storage/framework/views/.gitignore
+backend/bootstrap/cache/*.php
+
+# OS files
+.DS_Store
+Thumbs.db

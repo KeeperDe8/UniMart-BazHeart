@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FinalProject.LandingPage"
+             BackgroundColor="{DynamicResource PageBg}"
+             NavigationPage.HasNavigationBar="False">
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="20,18,20,30" Spacing="14">
+                <Border x:Name="LogoutBanner" IsVisible="False" BackgroundColor="{DynamicResource DarkBlue}" StrokeThickness="0" StrokeShape="RoundRectangle 14" Padding="14,10">
+                    <Label Text="ℹ  Logged out successfully" TextColor="White" FontAttributes="Bold"/>
+                </Border>
+
+                <!-- Header Branding -->
+                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,4,0,12" ColumnSpacing="10">
+                    <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="38" WidthRequest="38" Padding="2">
+                        <Image Source="bazheart_logo.png" Aspect="AspectFit"/>
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="0">
+                        <HorizontalStackLayout Spacing="0">
+                            <Label Text="Baz" FontSize="22" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                            <Label Text="Heart" FontSize="22" FontAttributes="Bold" TextColor="{DynamicResource PrimaryBlue}"/>
+                        </HorizontalStackLayout>
+                        <Label Text="Find. Share. Connect." FontSize="10.5" TextColor="{DynamicResource TextMuted}"/>
+                    </VerticalStackLayout>
+                    <Border Grid.Column="2" BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 10" Padding="8,4" VerticalOptions="Center">
+                        <Label Text="NU LIPA" FontSize="10" TextColor="{DynamicResource PrimaryBlue}" FontAttributes="Bold"/>
+                    </Border>
+                </Grid>
+
+                <!-- LOGIN PANEL -->
+                <VerticalStackLayout x:Name="LoginPanel" Spacing="14">
+                    <Label Text="Welcome back! 👋" FontSize="24" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                    <Label Text="Log in with your email account" FontSize="13" TextColor="{DynamicResource TextMuted}" Margin="0,-10,0,4"/>
+
+                    <!-- Mode Toggle (Login / Register) -->
+                    <Grid BackgroundColor="{DynamicResource InputBackground}" Padding="4" ColumnDefinitions="*,*">
+                        <Border BackgroundColor="{DynamicResource CardBg}" StrokeThickness="0" StrokeShape="RoundRectangle 12">
+                            <Label Text="Log In" TextColor="{DynamicResource PrimaryBlue}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                        <Label Grid.Column="1" Text="Register" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnRegisterSegmentTapped"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+
+                    <Label Text="Email" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                    <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 16" Padding="12,0">
+                        <Entry x:Name="LoginEmail" TextColor="{DynamicResource TextDark}" Placeholder="e.g. maria.santos@gmail.com" PlaceholderColor="{DynamicResource MutedText}" Keyboard="Email"/>
+                    </Border>
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Password" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                        <Label Grid.Column="1" Text="Forgot?" TextColor="{DynamicResource PrimaryBlue}" FontSize="12">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnForgotTapped"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+
+                    <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 16" Padding="12,0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Entry x:Name="LoginPassword" IsPassword="True" TextColor="{DynamicResource TextDark}" Placeholder="Enter password" PlaceholderColor="{DynamicResource MutedText}"/>
+                            <Label x:Name="LoginEyeBtn" Grid.Column="1" Text="👁" FontSize="18" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center" Padding="8,0">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnToggleLoginPassword"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+                    </Border>
+
+                    <Button x:Name="LoginButton" Text="Log In" Clicked="OnLoginClicked" BackgroundColor="{DynamicResource PrimaryBlue}" TextColor="White" HeightRequest="52" CornerRadius="18" FontAttributes="Bold"/>
+                </VerticalStackLayout>
+
+                <!-- REGISTER PANEL -->
+                <VerticalStackLayout x:Name="RegisterPanel" IsVisible="False" Spacing="14">
+                    <Label Text="Create an Account ✨" FontSize="24" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                    <Label Text="Join the campus marketplace" FontSize="13" TextColor="{DynamicResource TextMuted}" Margin="0,-10,0,4"/>
+
+                    <!-- Mode Toggle -->
+                    <Grid BackgroundColor="{DynamicResource InputBackground}" Padding="4" ColumnDefinitions="*,*">
+                        <Label Text="Log In" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnLoginSegmentTapped"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                        <Border Grid.Column="1" BackgroundColor="{DynamicResource CardBg}" StrokeThickness="0" StrokeShape="RoundRectangle 12">
+                            <Label Text="Register" TextColor="{DynamicResource PrimaryBlue}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+
+                    <!-- Role Toggle -->
+                    <Label Text="I want to use UniMart as:" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                    <Grid BackgroundColor="{DynamicResource InputBackground}" Padding="4" ColumnDefinitions="*,*">
+                        <Border x:Name="BuyerSegment" BackgroundColor="{DynamicResource CardBg}" StrokeThickness="0" StrokeShape="RoundRectangle 12">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnBuyerRoleTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="Buyer" TextColor="{DynamicResource PrimaryBlue}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                        <Border x:Name="SellerSegment" Grid.Column="1" BackgroundColor="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 12">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnSellerRoleTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="Student Seller" TextColor="{DynamicResource TextMuted}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+
+                    <Label Text="Full Name" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                    <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 16" Padding="12,0">
+                        <Entry x:Name="FullName" Placeholder="e.g. Juan dela Cruz" PlaceholderColor="{DynamicResource MutedText}" TextColor="{DynamicResource TextDark}"/>
+                    </Border>
+
+                    <Label Text="Email" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                    <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 16" Padding="12,0">
+                        <Entry x:Name="RegisterEmail" Placeholder="e.g. juan.delacruz@gmail.com" PlaceholderColor="{DynamicResource MutedText}" TextColor="{DynamicResource TextDark}" Keyboard="Email"/>
+                    </Border>
+
+                    <Label Text="Student Number (Optional)" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                    <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 16" Padding="12,0">
+                        <Entry x:Name="StudentNumber" Placeholder="e.g. 2023-10928" PlaceholderColor="{DynamicResource MutedText}" TextColor="{DynamicResource TextDark}"/>
+                    </Border>
+
+                    <!-- Seller Specific Fields -->
+                    <VerticalStackLayout x:Name="SellerFields" IsVisible="False" Spacing="14">
+                        <Label Text="Seller / Shop Name" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                        <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 16" Padding="12,0">
+                            <Entry x:Name="SellerName" Placeholder="e.g. Juan's Crafts &amp; Treats" PlaceholderColor="{DynamicResource MutedText}" TextColor="{DynamicResource TextDark}"/>
+                        </Border>
+
+                        <Label Text="Short Seller Bio" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                        <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 16" Padding="12">
+                            <Editor x:Name="SellerBio" Placeholder="Tell students what you sell..." PlaceholderColor="{DynamicResource MutedText}" TextColor="{DynamicResource TextDark}" HeightRequest="84"/>
+                        </Border>
+
+                        <Label Text="Preferred Meetup Area on Campus" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                        <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 16" Padding="12,0">
+                            <Picker x:Name="MeetupArea" TextColor="{DynamicResource TextDark}"/>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <Label Text="Password" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                    <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 16" Padding="12,0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Entry x:Name="RegisterPassword" Placeholder="Create password" IsPassword="True" PlaceholderColor="{DynamicResource MutedText}" TextColor="{DynamicResource TextDark}"/>
+                            <Label x:Name="RegisterEyeBtn" Grid.Column="1" Text="👁" FontSize="18" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center" Padding="8,0">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnToggleRegisterPassword"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+                    </Border>
+
+                    <Label Text="Confirm Password" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                    <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 16" Padding="12,0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Entry x:Name="ConfirmPassword" Placeholder="Re-enter password" IsPassword="True" PlaceholderColor="{DynamicResource MutedText}" TextColor="{DynamicResource TextDark}"/>
+                            <Label x:Name="ConfirmEyeBtn" Grid.Column="1" Text="👁" FontSize="18" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center" Padding="8,0">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnToggleConfirmPassword"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+                    </Border>
+
+                    <Button x:Name="CreateButton" Text="Create Account" Clicked="OnCreateClicked" BackgroundColor="{DynamicResource PrimaryBlue}" TextColor="White" HeightRequest="52" CornerRadius="18" FontAttributes="Bold"/>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

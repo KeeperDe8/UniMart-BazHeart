@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FinalProject.Controls.ProductSkeletonView">
+    <!-- Grid of 4 Shimmer Skeleton Cards -->
+    <Grid x:Name="SkeletonGrid" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+        <!-- Card 1 -->
+        <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 18" Padding="0">
+            <VerticalStackLayout Spacing="8" Padding="0,0,0,10">
+                <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="150" CornerRadius="18,18,0,0"/>
+                <VerticalStackLayout Padding="10,0" Spacing="6">
+                    <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="14" WidthRequest="110" HorizontalOptions="Start" CornerRadius="4"/>
+                    <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="12" WidthRequest="70" HorizontalOptions="Start" CornerRadius="4"/>
+                    <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="16" WidthRequest="50" HorizontalOptions="Start" CornerRadius="4"/>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Card 2 -->
+        <Border Grid.Column="1" BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 18" Padding="0">
+            <VerticalStackLayout Spacing="8" Padding="0,0,0,10">
+                <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="150" CornerRadius="18,18,0,0"/>
+                <VerticalStackLayout Padding="10,0" Spacing="6">
+                    <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="14" WidthRequest="120" HorizontalOptions="Start" CornerRadius="4"/>
+                    <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="12" WidthRequest="80" HorizontalOptions="Start" CornerRadius="4"/>
+                    <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="16" WidthRequest="60" HorizontalOptions="Start" CornerRadius="4"/>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Card 3 -->
+        <Border Grid.Row="1" BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 18" Padding="0">
+            <VerticalStackLayout Spacing="8" Padding="0,0,0,10">
+                <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="150" CornerRadius="18,18,0,0"/>
+                <VerticalStackLayout Padding="10,0" Spacing="6">
+                    <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="14" WidthRequest="100" HorizontalOptions="Start" CornerRadius="4"/>
+                    <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="12" WidthRequest="65" HorizontalOptions="Start" CornerRadius="4"/>
+                    <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="16" WidthRequest="45" HorizontalOptions="Start" CornerRadius="4"/>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Card 4 -->
+        <Border Grid.Row="1" Grid.Column="1" BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 18" Padding="0">
+            <VerticalStackLayout Spacing="8" Padding="0,0,0,10">
+                <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="150" CornerRadius="18,18,0,0"/>
+                <VerticalStackLayout Padding="10,0" Spacing="6">
+                    <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="14" WidthRequest="115" HorizontalOptions="Start" CornerRadius="4"/>
+                    <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="12" WidthRequest="75" HorizontalOptions="Start" CornerRadius="4"/>
+                    <BoxView BackgroundColor="{DynamicResource InputBackground}" HeightRequest="16" WidthRequest="55" HorizontalOptions="Start" CornerRadius="4"/>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentView>

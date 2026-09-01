@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FinalProject.Controls"
+             x:Class="FinalProject.ProfilePage"
+             BackgroundColor="{DynamicResource PageBg}"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView>
+            <VerticalStackLayout Padding="16,4,16,20" Spacing="14">
+                <!-- 1. Header -->
+                <controls:UniMartHeader/>
+
+                <!-- 2. Profile Student Identity Card -->
+                <Border BackgroundColor="{DynamicResource DarkBlue}" StrokeThickness="0" StrokeShape="RoundRectangle 20" Padding="16"
+                        Shadow="{OnPlatform Default={Shadow Brush='#000000', Offset='0,4', Radius=12, Opacity=0.15}}">
+                    <VerticalStackLayout Spacing="6">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="NATIONAL UNIVERSITY" TextColor="White" FontAttributes="Bold" FontSize="11" CharacterSpacing="0.8"/>
+                            <Border x:Name="RoleBadge" Grid.Column="1" BackgroundColor="#1E3A8A" StrokeThickness="0" StrokeShape="RoundRectangle 6" Padding="6,2">
+                                <Label x:Name="RoleBadgeText" Text="STUDENT SELLER" TextColor="#FDE047" FontSize="9" FontAttributes="Bold"/>
+                            </Border>
+                        </Grid>
+                        <Label Text="Lipa Campus · Verified Student" TextColor="#C9D8FF" FontSize="11"/>
+                        <Grid ColumnDefinitions="58,*" Margin="0,8" ColumnSpacing="12">
+                            <Border Stroke="{DynamicResource PrimaryBlue}" StrokeThickness="2" StrokeShape="RoundRectangle 29" HeightRequest="58" WidthRequest="58">
+                                <Image Source="profile_sdada.jpg" Aspect="AspectFill"/>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                                <Label x:Name="UserNameLabel" Text="Maria Santos" FontSize="18" FontAttributes="Bold" TextColor="White"/>
+                                <Label x:Name="UserHandleLabel" Text="@mariasantos" TextColor="#C9D8FF" FontSize="12"/>
+                                <Label Text="NU Lipa Campus" TextColor="#93C5FD" FontSize="11"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- 3. Seller Verification / Start Selling Action Banner (if not seller) -->
+                <Border x:Name="SellerOnboardingCard" BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource PrimaryBlue}" StrokeThickness="1.5" StrokeShape="RoundRectangle 18" Padding="14">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <VerticalStackLayout Spacing="3" VerticalOptions="Center">
+                            <Label Text="Start Selling on Campus" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                            <Label Text="List products, set meetups &amp; earn with student buyers." FontSize="11" TextColor="{DynamicResource TextMuted}"/>
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1" Text="Apply to Sell" Clicked="OnApplySellerClicked" BackgroundColor="{DynamicResource PrimaryBlue}" TextColor="White" FontSize="11" FontAttributes="Bold" CornerRadius="14" HeightRequest="34" Padding="12,0"/>
+                    </Grid>
+                </Border>
+
+                <!-- 4. Marketplace Stats -->
+                <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 17" Padding="12">
+                    <Grid ColumnDefinitions="*,*,*">
+                        <VerticalStackLayout>
+                            <Label x:Name="ProfileListingsCountLabel" Text="2" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource PrimaryBlue}" HorizontalOptions="Center"/>
+                            <Label Text="Listings" FontSize="11" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label x:Name="ProfileSavedCountLabel" Text="0" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource PrimaryBlue}" HorizontalOptions="Center"/>
+                            <Label Text="Saved" FontSize="11" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="2">
+                            <Label x:Name="ProfileSoldCountLabel" Text="0" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource PrimaryBlue}" HorizontalOptions="Center"/>
+                            <Label Text="Sold" FontSize="11" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- 5. Mode Switcher -->
+                <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 17" Padding="12">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="CAMPUS MODE" FontSize="10" FontAttributes="Bold" CharacterSpacing="0.6" TextColor="{DynamicResource TextMuted}"/>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Button x:Name="BuyerButton" Text="Buyer Mode" Clicked="OnModeClicked" BackgroundColor="{DynamicResource InputBackground}" TextColor="{DynamicResource TextMuted}" CornerRadius="10" HeightRequest="36" FontSize="12" FontAttributes="Bold"/>
+                            <Button x:Name="SellerButton" Grid.Column="1" Text="Seller Mode" Clicked="OnModeClicked" BackgroundColor="{DynamicResource DarkBlue}" TextColor="White" CornerRadius="10" HeightRequest="36" FontSize="12" FontAttributes="Bold"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- 6. Seller Hub Actions (Active in Seller Mode) -->
+                <Border x:Name="SellerHubSection" BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 17" Padding="14,10">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="SELLER HUB" FontSize="10" FontAttributes="Bold" CharacterSpacing="0.6" TextColor="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
+                        
+                        <Grid ColumnDefinitions="*,Auto" Padding="0,8">
+                            <Grid.GestureRecognizers><TapGestureRecognizer Tapped="OnListingsClicked"/></Grid.GestureRecognizers>
+                            <Label Text="My Product Listings" FontSize="13" TextColor="{DynamicResource TextDark}" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="›" FontSize="18" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center"/>
+                        </Grid>
+                        <BoxView HeightRequest="1" Color="{DynamicResource BorderLight}"/>
+
+                        <Grid ColumnDefinitions="*,Auto" Padding="0,8">
+                            <Grid.GestureRecognizers><TapGestureRecognizer Tapped="OnScheduleClicked"/></Grid.GestureRecognizers>
+                            <Label Text="Selling Schedules &amp; Hotspots" FontSize="13" TextColor="{DynamicResource TextDark}" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="›" FontSize="18" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center"/>
+                        </Grid>
+                        <BoxView HeightRequest="1" Color="{DynamicResource BorderLight}"/>
+
+                        <Grid ColumnDefinitions="*,Auto" Padding="0,8">
+                            <Grid.GestureRecognizers><TapGestureRecognizer Tapped="OnShopClicked"/></Grid.GestureRecognizers>
+                            <Label Text="Preview Public Shop" FontSize="13" TextColor="{DynamicResource TextDark}" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="›" FontSize="18" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- 7. General Settings -->
+                <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 17" Padding="14,10">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="PREFERENCES" FontSize="10" FontAttributes="Bold" CharacterSpacing="0.6" TextColor="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
+
+                        <Grid ColumnDefinitions="*,Auto" Padding="0,8">
+                            <Grid.GestureRecognizers><TapGestureRecognizer Tapped="OnSavedClicked"/></Grid.GestureRecognizers>
+                            <Label Text="Saved Wishlist" FontSize="13" TextColor="{DynamicResource TextDark}" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="›" FontSize="18" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center"/>
+                        </Grid>
+                        <BoxView HeightRequest="1" Color="{DynamicResource BorderLight}"/>
+
+                        <Grid ColumnDefinitions="*,Auto" Padding="0,8">
+                            <Grid.GestureRecognizers><TapGestureRecognizer Tapped="OnNotificationsClicked"/></Grid.GestureRecognizers>
+                            <Label Text="Campus Notifications" FontSize="13" TextColor="{DynamicResource TextDark}" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="›" FontSize="18" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center"/>
+                        </Grid>
+                        <BoxView HeightRequest="1" Color="{DynamicResource BorderLight}"/>
+
+                        <!-- Dark Mode Switch -->
+                        <Grid ColumnDefinitions="*,Auto" Padding="0,6">
+                            <VerticalStackLayout VerticalOptions="Center" Spacing="1">
+                                <Label Text="Dark Theme" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                                <Label Text="Obsidian dark mode palette" FontSize="11" TextColor="{DynamicResource TextMuted}"/>
+                            </VerticalStackLayout>
+                            <Switch x:Name="DarkModeSwitch" Grid.Column="1" Toggled="OnDarkModeToggled" VerticalOptions="Center"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Logout Button -->
+                <Button Text="Sign Out" Clicked="OnLogoutClicked" BackgroundColor="Transparent" BorderColor="{DynamicResource DangerRed}" BorderWidth="1" TextColor="{DynamicResource DangerRed}" CornerRadius="14" HeightRequest="44" FontAttributes="Bold"/>
+                <Label Text="UniMart v1.0 · NU Lipa Campus" FontSize="11" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Floating Navigation Bar -->
+        <controls:BottomNavBar Grid.Row="1" ActiveTab="Profile"/>
+    </Grid>
+</ContentPage>

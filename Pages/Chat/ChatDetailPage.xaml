@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FinalProject.ChatDetailPage"
+             BackgroundColor="{DynamicResource PageBg}"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
+        <!-- 1. Top Header -->
+        <Grid Padding="16,8" ColumnDefinitions="40,*,40" BackgroundColor="{DynamicResource PageBg}">
+            <Border Stroke="{DynamicResource BorderLight}" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 20" HeightRequest="38" WidthRequest="38">
+                <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnBackTapped"/></Border.GestureRecognizers>
+                <Label Text="‹" FontSize="26" TextColor="{DynamicResource TextDark}" HorizontalOptions="Center" VerticalOptions="Center"/>
+            </Border>
+            <Grid Grid.Column="1" ColumnDefinitions="42,*" Margin="8,0" ColumnSpacing="8">
+                <Border BackgroundColor="#A9D8E9" StrokeThickness="0" StrokeShape="RoundRectangle 19" HeightRequest="38" WidthRequest="38">
+                    <Image x:Name="ChatAvatar" Source="kai_avatar.jpg" Aspect="AspectFill"/>
+                </Border>
+                <VerticalStackLayout Grid.Column="1" Spacing="0" VerticalOptions="Center">
+                    <Label x:Name="ChatUserName" Text="Kai dela Cruz (@matchabykai)" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource TextDark}" LineBreakMode="TailTruncation"/>
+                    <Label Text="Active now • NU Lipa Campus" FontSize="10" TextColor="{DynamicResource SuccessGreen}"/>
+                </VerticalStackLayout>
+            </Grid>
+            <Border Grid.Column="2" BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 20" HeightRequest="38" WidthRequest="38">
+                <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnFlagTapped"/></Border.GestureRecognizers>
+                <Label Text="⚑" FontSize="15" TextColor="{DynamicResource DangerRed}" HorizontalOptions="Center" VerticalOptions="Center"/>
+            </Border>
+        </Grid>
+
+        <!-- 2. Product Context Top Strip -->
+        <Grid Grid.Row="1" BackgroundColor="{DynamicResource InputBackground}" Padding="12,8" ColumnDefinitions="36,*,Auto">
+            <Border BackgroundColor="#92BD91" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="32" WidthRequest="32">
+                <Image x:Name="ProductThumb" Source="matcha.jpg" Aspect="AspectFill"/>
+            </Border>
+            <Label x:Name="ProductTitleText" Grid.Column="1" Text="Strawberry Cold Foam Matcha • ₱120" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource PrimaryBlue}" VerticalOptions="Center" Margin="8,0"/>
+            <Border Grid.Column="2" BackgroundColor="{DynamicResource LightGreen}" StrokeThickness="0" StrokeShape="RoundRectangle 10" Padding="8,3">
+                <Label Text="Available Today" FontSize="10" FontAttributes="Bold" TextColor="{DynamicResource SuccessGreen}"/>
+            </Border>
+        </Grid>
+
+        <!-- 3. Scrollable Chat Message Stream -->
+        <ScrollView x:Name="ConversationScroll" Grid.Row="2">
+            <VerticalStackLayout x:Name="MessagesLayout" Padding="16,14" Spacing="10"/>
+        </ScrollView>
+
+        <!-- 4. Quick Suggestion Action Chips -->
+        <ScrollView Grid.Row="3" Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Padding="12,4" BackgroundColor="{DynamicResource PageBg}">
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="+ Propose Meetup" Clicked="OnProposeMeetupQuickClicked" BackgroundColor="{DynamicResource PrimaryBlue}" TextColor="White" FontSize="11" FontAttributes="Bold" HeightRequest="30" CornerRadius="15" Padding="12,0"/>
+                <Button Text="Is this available today?" Clicked="OnQuickChipClicked" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource TextDark}" BorderColor="{DynamicResource BorderLight}" BorderWidth="1" FontSize="11" HeightRequest="30" CornerRadius="15" Padding="12,0"/>
+                <Button Text="Where are you on campus?" Clicked="OnQuickChipClicked" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource TextDark}" BorderColor="{DynamicResource BorderLight}" BorderWidth="1" FontSize="11" HeightRequest="30" CornerRadius="15" Padding="12,0"/>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- 5. Bottom Message Input Bar -->
+        <Grid Grid.Row="4" BackgroundColor="{DynamicResource CardBg}" Padding="10,8" ColumnDefinitions="42,*,70" ColumnSpacing="8">
+            <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 20" HeightRequest="40" WidthRequest="40">
+                <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnLocationShortcutTapped"/></Border.GestureRecognizers>
+                <Label Text="📍" FontSize="16" HorizontalOptions="Center" VerticalOptions="Center"/>
+            </Border>
+            <Border Grid.Column="1" BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 20" HeightRequest="40" Padding="12,0">
+                <Entry x:Name="MessageEntry"
+                       Placeholder="Type a message..."
+                       PlaceholderColor="{DynamicResource TextMuted}"
+                       TextColor="{DynamicResource TextDark}"
+                       FontSize="13"
+                       VerticalOptions="Center"
+                       ReturnType="Send"
+                       Completed="OnSendClicked"/>
+            </Border>
+            <Button Grid.Column="2" Text="Send" Clicked="OnSendClicked" BackgroundColor="{DynamicResource PrimaryBlue}" TextColor="White" FontAttributes="Bold" CornerRadius="18" HeightRequest="40" Padding="10,0"/>
+        </Grid>
+    </Grid>
+</ContentPage>

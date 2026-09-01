@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FinalProject.Controls"
+             x:Class="FinalProject.ExplorePage"
+             BackgroundColor="{DynamicResource PageBg}"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView>
+            <VerticalStackLayout Padding="16,4,16,16" Spacing="16">
+                <!-- 1. Header -->
+                <controls:UniMartHeader/>
+
+                <!-- 2. Search Bar -->
+                <Border BackgroundColor="{DynamicResource InputBackground}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 20" HeightRequest="44" Padding="14,0">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Label Text="⌕" FontSize="22" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center"/>
+                        <Entry x:Name="SearchInput" Grid.Column="1" Margin="8,0" Placeholder="Search food, crochet, clothes, or sellers..." PlaceholderColor="{DynamicResource MutedText}" TextColor="{DynamicResource TextDark}" FontSize="13" VerticalOptions="Center" TextChanged="OnSearchTextChanged"/>
+                    </Grid>
+                </Border>
+
+                <!-- 3. Category Grid Showcase -->
+                <Grid ColumnDefinitions="*,*" RowDefinitions="68,68" ColumnSpacing="10" RowSpacing="10">
+                    <!-- Food & Drinks -->
+                    <Border BackgroundColor="#2563EB" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="12">
+                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnCategoryCardTapped" CommandParameter="Food &amp; Drinks"/></Border.GestureRecognizers>
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="1">
+                            <Label Text="FOOD &amp; DRINKS" FontSize="11" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center"/>
+                            <Label Text="Matcha, Pastries &amp; Meals" FontSize="9" TextColor="#BFDBFE" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Handmade & Crafts -->
+                    <Border Grid.Column="1" BackgroundColor="#DB2777" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="12">
+                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnCategoryCardTapped" CommandParameter="Handmade"/></Border.GestureRecognizers>
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="1">
+                            <Label Text="HANDMADE" FontSize="11" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center"/>
+                            <Label Text="Crochet, Crafts &amp; Gifts" FontSize="9" TextColor="#FCE7F3" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Thrift Clothes -->
+                    <Border Grid.Row="1" BackgroundColor="#D97706" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="12">
+                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnCategoryCardTapped" CommandParameter="Clothes"/></Border.GestureRecognizers>
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="1">
+                            <Label Text="THRIFT &amp; WEAR" FontSize="11" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center"/>
+                            <Label Text="Jackets, Tops &amp; Shoes" FontSize="9" TextColor="#FEF3C7" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Accessories & Stationery -->
+                    <Border Grid.Row="1" Grid.Column="1" BackgroundColor="#059669" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="12">
+                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnCategoryCardTapped" CommandParameter="Accessories"/></Border.GestureRecognizers>
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="1">
+                            <Label Text="ACCESSORIES" FontSize="11" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center"/>
+                            <Label Text="Charms, Stickers &amp; Pens" FontSize="9" TextColor="#D1FAE5" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- 4. Filter Pills -->
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Margin="-16,0" Padding="16,0">
+                    <HorizontalStackLayout Spacing="8">
+                        <Button x:Name="AllFilterBtn" Text="All" Clicked="OnFilterPillClicked" BackgroundColor="{DynamicResource DarkBlue}" TextColor="White" HeightRequest="32" CornerRadius="16" FontSize="11" FontAttributes="Bold" Padding="14,0"/>
+                        <Button x:Name="FoodFilterBtn" Text="Food &amp; Drinks" Clicked="OnFilterPillClicked" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource TextDark}" BorderColor="{DynamicResource BorderLight}" BorderWidth="1" HeightRequest="32" CornerRadius="16" FontSize="11" Padding="14,0"/>
+                        <Button x:Name="HandmadeFilterBtn" Text="Handmade" Clicked="OnFilterPillClicked" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource TextDark}" BorderColor="{DynamicResource BorderLight}" BorderWidth="1" HeightRequest="32" CornerRadius="16" FontSize="11" Padding="14,0"/>
+                        <Button x:Name="ClothesFilterBtn" Text="Clothes" Clicked="OnFilterPillClicked" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource TextDark}" BorderColor="{DynamicResource BorderLight}" BorderWidth="1" HeightRequest="32" CornerRadius="16" FontSize="11" Padding="14,0"/>
+                        <Button x:Name="AccessoriesFilterBtn" Text="Accessories" Clicked="OnFilterPillClicked" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource TextDark}" BorderColor="{DynamicResource BorderLight}" BorderWidth="1" HeightRequest="32" CornerRadius="16" FontSize="11" Padding="14,0"/>
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <!-- 5. Dynamic Product Grid Container -->
+                <Grid x:Name="DynamicProductsGrid" ColumnDefinitions="*,*" ColumnSpacing="12" RowSpacing="14"/>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Floating Bottom Capsule Bar -->
+        <controls:BottomNavBar Grid.Row="1" ActiveTab="Explore"/>
+    </Grid>
+</ContentPage>

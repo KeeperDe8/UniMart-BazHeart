@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FinalProject.Controls"
+             x:Class="FinalProject.MessagesPage"
+             BackgroundColor="{DynamicResource PageBg}"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView>
+            <VerticalStackLayout Padding="16,4,16,16" Spacing="12">
+                <controls:UniMartHeader/>
+
+                <!-- Title & Filter Pills -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="Chats" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource TextDark}" VerticalOptions="Center"/>
+                    <Border Grid.Column="1" BackgroundColor="{DynamicResource InputBackground}" StrokeThickness="0" StrokeShape="RoundRectangle 10" Padding="3">
+                        <HorizontalStackLayout Spacing="2">
+                            <Button Text="All" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource PrimaryBlue}" FontSize="12" FontAttributes="Bold" HeightRequest="30" CornerRadius="8" Padding="13,0"/>
+                            <Button Text="Unread" BackgroundColor="Transparent" TextColor="{DynamicResource TextMuted}" FontSize="12" HeightRequest="30" Padding="10,0"/>
+                        </HorizontalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- Conversation 1 (Kai) -->
+                <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 16" Padding="12,10">
+                    <Grid Padding="0,4" ColumnDefinitions="54,*,Auto">
+                        <Grid HeightRequest="46" WidthRequest="46">
+                            <Border BackgroundColor="#A9D8E9" StrokeThickness="0" StrokeShape="RoundRectangle 23">
+                                <Image Source="kai_avatar.jpg" Aspect="AspectFill"/>
+                            </Border>
+                            <Ellipse Fill="{DynamicResource SuccessGreen}" HeightRequest="8" WidthRequest="8" HorizontalOptions="End" VerticalOptions="End"/>
+                        </Grid>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="Kai dela Cruz (@matchabykai)" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                            <Label Text="Sure! I have 3 cups of Strawberry Matcha left today at th..." FontSize="11" TextColor="{DynamicResource TextMuted}" LineBreakMode="TailTruncation"/>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="2" Spacing="7" HorizontalOptions="End">
+                            <Label Text="12:15 PM" FontSize="10" TextColor="{DynamicResource TextMuted}"/>
+                            <Border BackgroundColor="#FFE3E9" StrokeThickness="0" StrokeShape="RoundRectangle 10" HeightRequest="19" WidthRequest="19" HorizontalOptions="End">
+                                <Label Text="1" FontSize="10" TextColor="{DynamicResource DangerRed}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                        </VerticalStackLayout>
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnKaiTapped"/>
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                </Border>
+
+                <!-- Conversation 2 (Samantha) -->
+                <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 16" Padding="12,10">
+                    <Grid Padding="0,4" ColumnDefinitions="54,*,Auto">
+                        <Grid HeightRequest="46" WidthRequest="46">
+                            <Border BackgroundColor="#F2C6CF" StrokeThickness="0" StrokeShape="RoundRectangle 23">
+                                <Image Source="samantha_avatar.jpg" Aspect="AspectFill"/>
+                            </Border>
+                            <Ellipse Fill="{DynamicResource SuccessGreen}" HeightRequest="8" WidthRequest="8" HorizontalOptions="End" VerticalOptions="End"/>
+                        </Grid>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="Samantha Reyes (@crochetbysam)" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                            <Label Text="Got it! I will reserve the pastel tulip bouquet for you." FontSize="11" TextColor="{DynamicResource TextMuted}" LineBreakMode="TailTruncation"/>
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="Yesterday" FontSize="10" TextColor="{DynamicResource TextMuted}" VerticalOptions="Start"/>
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnKaiTapped"/>
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                </Border>
+
+                <!-- Conversation 3 (Mark) -->
+                <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 16" Padding="12,10">
+                    <Grid Padding="0,4" ColumnDefinitions="54,*,Auto">
+                        <Grid HeightRequest="46" WidthRequest="46">
+                            <Border BackgroundColor="#E0E7FF" StrokeThickness="0" StrokeShape="RoundRectangle 23">
+                                <Label Text="M" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource PrimaryBlue}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                        </Grid>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="Mark Santos (@marks_thrift)" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                            <Label Text="Hi! Are you still selling the oversized campus jacket?" FontSize="11" TextColor="{DynamicResource TextMuted}" LineBreakMode="TailTruncation"/>
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="2 days ago" FontSize="10" TextColor="{DynamicResource TextMuted}" VerticalOptions="Start"/>
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnKaiTapped"/>
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+        <controls:BottomNavBar Grid.Row="1" ActiveTab="Messages"/>
+    </Grid>
+</ContentPage>

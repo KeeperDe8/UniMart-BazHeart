@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FinalProject.Controls"
+             x:Class="FinalProject.HomeScreenPage"
+             BackgroundColor="{DynamicResource PageBg}"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView>
+            <VerticalStackLayout Padding="16,4,16,16" Spacing="16">
+                <!-- 1. Top Header -->
+                <controls:UniMartHeader/>
+
+                <!-- 2. Hero Featured Showcase Banner -->
+                <Border BackgroundColor="{DynamicResource DarkBlue}"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 22"
+                        HeightRequest="155"
+                        Padding="0"
+                        Shadow="{OnPlatform Default={Shadow Brush='#000000', Offset='0,4', Radius=10, Opacity=0.1}}">
+                    <Grid>
+                        <!-- Background artwork / photo -->
+                        <Image Source="crochet_bouquet.jpg" Aspect="AspectFill" Opacity="0.45"/>
+                        
+                        <!-- Gradient Overlay -->
+                        <BoxView BackgroundColor="#000000" Opacity="0.3"/>
+
+                        <VerticalStackLayout Padding="18" VerticalOptions="Center" Spacing="4">
+                            <Border BackgroundColor="{DynamicResource PrimaryBlue}" StrokeThickness="0" StrokeShape="RoundRectangle 6" Padding="6,2" HorizontalOptions="Start">
+                                <Label Text="FEATURED CAMPUS DROP" FontSize="9" FontAttributes="Bold" TextColor="White" CharacterSpacing="0.6"/>
+                            </Border>
+                            <Label Text="EXPLORE TRENDY&#x0a;CAMPUS COLLECTION" FontSize="16" FontAttributes="Bold" TextColor="White" LineHeight="1.15"/>
+                        </VerticalStackLayout>
+
+                        <!-- Circular Action Button -->
+                        <Border BackgroundColor="White"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 20"
+                                HeightRequest="38"
+                                WidthRequest="38"
+                                HorizontalOptions="End"
+                                VerticalOptions="End"
+                                Margin="16">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnExploreClicked"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="↗" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource DarkBlue}" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,-2,0,0"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Carousel Indicator Dots -->
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="6" Margin="0,-6,0,0">
+                    <BoxView BackgroundColor="{DynamicResource PrimaryBlue}" HeightRequest="4" WidthRequest="18" CornerRadius="2"/>
+                    <BoxView BackgroundColor="{DynamicResource BorderLight}" HeightRequest="4" WidthRequest="6" CornerRadius="2"/>
+                    <BoxView BackgroundColor="{DynamicResource BorderLight}" HeightRequest="4" WidthRequest="6" CornerRadius="2"/>
+                </HorizontalStackLayout>
+
+                <!-- 3. Category Horizontal Pills -->
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Margin="-16,0" Padding="16,0">
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="✦ All" BackgroundColor="{DynamicResource DarkBlue}" TextColor="White" CornerRadius="16" FontSize="12" FontAttributes="Bold" HeightRequest="34" Padding="14,0"/>
+                        <Button Text="☕ Food &amp; Drinks" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource TextDark}" BorderColor="{DynamicResource BorderLight}" BorderWidth="1" CornerRadius="16" FontSize="12" HeightRequest="34" Padding="14,0"/>
+                        <Button Text="🧶 Handmade" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource TextDark}" BorderColor="{DynamicResource BorderLight}" BorderWidth="1" CornerRadius="16" FontSize="12" HeightRequest="34" Padding="14,0"/>
+                        <Button Text="👗 Thrift Clothes" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource TextDark}" BorderColor="{DynamicResource BorderLight}" BorderWidth="1" CornerRadius="16" FontSize="12" HeightRequest="34" Padding="14,0"/>
+                        <Button Text="🎒 Stationery" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource TextDark}" BorderColor="{DynamicResource BorderLight}" BorderWidth="1" CornerRadius="16" FontSize="12" HeightRequest="34" Padding="14,0"/>
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <!-- 4. Section Title -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="New Arrival" FontSize="17" FontAttributes="Bold" TextColor="{DynamicResource TextDark}" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="See All" TextColor="{DynamicResource PrimaryBlue}" FontSize="12" FontAttributes="Bold" VerticalOptions="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnExploreTapped"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                </Grid>
+
+                <!-- 5. Skeleton Loading State (Shown while loading) -->
+                <controls:ProductSkeletonView x:Name="LoadingSkeleton" IsVisible="False"/>
+
+                <!-- 6. Real Dynamic Product Grid Cards -->
+                <Grid x:Name="ProductGrid" ColumnDefinitions="*,*" ColumnSpacing="12" RowSpacing="14"/>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Floating Bottom Capsule Bar -->
+        <controls:BottomNavBar Grid.Row="1" ActiveTab="Home"/>
+    </Grid>
+</ContentPage>

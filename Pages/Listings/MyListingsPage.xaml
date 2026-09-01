@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FinalProject.Controls"
+             x:Class="FinalProject.MyListingsPage"
+             BackgroundColor="{DynamicResource PageBg}"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView>
+            <VerticalStackLayout Padding="16,4,16,20" Spacing="14">
+                <!-- Header -->
+                <controls:UniMartHeader/>
+
+                <!-- Title & Create Button -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout Spacing="1">
+                        <Label Text="My Listings" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource TextDark}"/>
+                        <Label Text="Manage your campus products &amp; fees" FontSize="11" TextColor="{DynamicResource TextMuted}"/>
+                    </VerticalStackLayout>
+                    <Button Grid.Column="1" Text="+ Create" Clicked="OnCreateClicked" BackgroundColor="{DynamicResource PrimaryBlue}" TextColor="White" FontAttributes="Bold" CornerRadius="18" FontSize="12" HeightRequest="36" Padding="15,0"/>
+                </Grid>
+
+                <!-- Stats Summary Cards -->
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                    <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 13" Padding="4,10">
+                        <VerticalStackLayout>
+                            <Label x:Name="ActiveCountLabel" Text="0" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource PrimaryBlue}" HorizontalOptions="Center"/>
+                            <Label Text="Active on Campus" FontSize="10" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="1" BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 13" Padding="4,10">
+                        <VerticalStackLayout>
+                            <Label x:Name="PaymentReqCountLabel" Text="0" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource PrimaryBlue}" HorizontalOptions="Center"/>
+                            <Label Text="Payment Req." FontSize="10" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="2" BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderLight}" StrokeShape="RoundRectangle 13" Padding="4,10">
+                        <VerticalStackLayout>
+                            <Label x:Name="SoldOutCountLabel" Text="0" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource PrimaryBlue}" HorizontalOptions="Center"/>
+                            <Label Text="Sold Out" FontSize="10" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- Filter Pills -->
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Margin="0,2">
+                    <HorizontalStackLayout Spacing="8">
+                        <Button x:Name="AllButton" Text="All (0)" Clicked="OnFilterClicked" BackgroundColor="{DynamicResource DarkBlue}" TextColor="White" FontAttributes="Bold" CornerRadius="18" HeightRequest="34" FontSize="11"/>
+                        <Button x:Name="ActiveButton" Text="Active (0)" Clicked="OnFilterClicked" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource TextMuted}" BorderColor="{DynamicResource BorderLight}" BorderWidth="1" CornerRadius="18" HeightRequest="34" FontSize="11"/>
+                        <Button x:Name="PaymentButton" Text="Payment Required (0)" Clicked="OnFilterClicked" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource TextMuted}" BorderColor="{DynamicResource BorderLight}" BorderWidth="1" CornerRadius="18" HeightRequest="34" FontSize="11"/>
+                        <Button x:Name="SoldButton" Text="Sold Out (0)" Clicked="OnFilterClicked" BackgroundColor="{DynamicResource CardBg}" TextColor="{DynamicResource TextMuted}" BorderColor="{DynamicResource BorderLight}" BorderWidth="1" CornerRadius="18" HeightRequest="34" FontSize="11"/>
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <!-- Dynamic Listings Container -->
+                <VerticalStackLayout x:Name="ListingsListContainer" Spacing="10"/>
+
+                <!-- Empty State View -->
+                <VerticalStackLayout x:Name="EmptyStateView" Margin="0,45,0,0" HorizontalOptions="Center" Spacing="10">
+                    <Border BackgroundColor="{DynamicResource InputBackground}" StrokeThickness="0" StrokeShape="RoundRectangle 30" HeightRequest="56" WidthRequest="56">
+                        <Label Text="▣" FontSize="26" TextColor="{DynamicResource AccentGold}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Border>
+                    <Label Text="No listings here yet" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource TextDark}" HorizontalOptions="Center"/>
+                    <Label x:Name="EmptyText" Text="You have not published any listings yet. Tap '+ Create' to start selling!" FontSize="12" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
+                    <Button Text="+ Create Listing" Clicked="OnCreateClicked" BackgroundColor="{DynamicResource PrimaryBlue}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="18,0"/>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+        <controls:BottomNavBar Grid.Row="1" ActiveTab="Listings"/>
+    </Grid>
+</ContentPage>
