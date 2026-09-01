@@ -29,45 +29,121 @@ public abstract class UniPage : ContentPage
 
 public class CreateListingPhotosPage : UniPage
 {
-    readonly Image preview = new() { Aspect = Aspect.AspectFill, HeightRequest = 140, IsVisible = false };
-    readonly Border uploadCard;
+    readonly List<string> selectedPhotos = [];
+    readonly HorizontalStackLayout photosGallery = new() { Spacing = 10 };
+    readonly Label countLabel;
+    readonly Border addCard;
 
     public CreateListingPhotosPage()
     {
-        var form = Form("Step 1: Product Photos", "Upload a clear photo of what you're selling from your device.", 1);
+        var form = Form("Step 1: Product Photos (1 to 5)", "Upload 1 to 5 clear photos of your product from your device.", 1);
         
-        var uploadLbl = L("📷\nTap to Pick Photo from Phone", 14, true, Blue);
-        uploadLbl.HorizontalTextAlignment = TextAlignment.Center;
-        uploadLbl.VerticalTextAlignment = TextAlignment.Center;
+        countLabel = L("0 / 5 Photos Selected (Min 1, Max 5)", 12, true, Blue);
+        form.Add(countLabel);
+
+        var addLbl = L("📷\n+ Add Photo", 13, true, Blue);
+        addLbl.HorizontalTextAlignment = TextAlignment.Center;
+        addLbl.VerticalTextAlignment = TextAlignment.Center;
         
-        uploadCard = Card(uploadLbl, 16);
-        uploadCard.HeightRequest = 140;
+        addCard = Card(addLbl, 12);
+        addCard.HeightRequest = 110;
+        addCard.WidthRequest = 110;
         
         var tap = new TapGestureRecognizer();
         tap.Tapped += PickPhoto;
-        uploadCard.GestureRecognizers.Add(tap);
-        preview.GestureRecognizers.Add(tap);
+        addCard.GestureRecognizers.Add(tap);
 
-        var holder = new Grid();
-        holder.Add(uploadCard);
-        holder.Add(preview);
-        form.Add(holder);
+        var scrollThumbs = new ScrollView
+        {
+            Orientation = ScrollOrientation.Horizontal,
+            Content = photosGallery
+        };
+        form.Add(scrollThumbs);
 
-        form.Add(L("Tap the box above to open your phone gallery / storage.", 11, false, Muted));
+        if (!string.IsNullOrWhiteSpace(State.Draft.ImageSource) && !selectedPhotos.Contains(State.Draft.ImageSource))
+        {
+            selectedPhotos.Add(State.Draft.ImageSource);
+        }
+        foreach (var img in State.Draft.AdditionalImages)
+        {
+            if (!selectedPhotos.Contains(img)) selectedPhotos.Add(img);
+        }
+
+        RefreshGallery();
+
+        form.Add(L("Tap '+ Add Photo' to pick from phone storage. Maximum 5 photos.", 11, false, Muted));
         form.Add(Btn("Continue to Details →", async (_, _) =>
         {
-            if (string.IsNullOrWhiteSpace(State.Draft.ImageSource))
+            if (selectedPhotos.Count == 0)
             {
-                State.Draft.ImageSource = "matcha.jpg"; // Safe fallback if skipped
+                selectedPhotos.Add("matcha.jpg"); // Fallback
             }
+            State.Draft.ImageSource = selectedPhotos[0];
+            State.Draft.AdditionalImages = selectedPhotos.Skip(1).ToList();
             await Go("create-listing/details");
         }));
 
         SetPage("Upload Photos", new ScrollView { Content = form });
     }
 
+    void RefreshGallery()
+    {
+        photosGallery.Children.Clear();
+        foreach (var photoPath in selectedPhotos.ToList())
+        {
+            var thumb = new Grid { HeightRequest = 110, WidthRequest = 110 };
+            var img = new Image
+            {
+                Source = photoPath.StartsWith("http") || photoPath.EndsWith(".jpg") || photoPath.EndsWith(".png") 
+                    ? ImageSource.FromFile(photoPath) 
+                    : ImageSource.FromFile(photoPath),
+                Aspect = Aspect.AspectFill
+            };
+            var frame = new Border { Stroke = Line, StrokeThickness = 1, StrokeShape = new RoundRectangle { CornerRadius = 14 }, Content = img };
+            thumb.Add(frame);
+
+            var delBtn = new Border
+            {
+                BackgroundColor = Color.FromArgb("#EF4444"),
+                StrokeThickness = 0,
+                StrokeShape = new RoundRectangle { CornerRadius = 11 },
+                HeightRequest = 22,
+                WidthRequest = 22,
+                HorizontalOptions = LayoutOptions.End,
+                VerticalOptions = LayoutOptions.Start,
+                Margin = new Thickness(4)
+            };
+            delBtn.Content = L("✕", 10, true, Colors.White);
+            ((Label)delBtn.Content).HorizontalOptions = LayoutOptions.Center;
+            ((Label)delBtn.Content).VerticalOptions = LayoutOptions.Center;
+            var delTap = new TapGestureRecognizer();
+            delTap.Tapped += (_, _) =>
+            {
+                selectedPhotos.Remove(photoPath);
+                RefreshGallery();
+            };
+            delBtn.GestureRecognizers.Add(delTap);
+            thumb.Add(delBtn);
+
+            photosGallery.Add(thumb);
+        }
+
+        if (selectedPhotos.Count < 5)
+        {
+            photosGallery.Add(addCard);
+        }
+
+        countLabel.Text = $"{selectedPhotos.Count} / 5 Photos Selected (Min 1, Max 5)";
+    }
+
     async void PickPhoto(object? s, TappedEventArgs e)
     {
+        if (selectedPhotos.Count >= 5)
+        {
+            if (Shell.Current != null) await Shell.Current.DisplayAlert("Photo Limit", "Maximum of 5 photos reached.", "OK");
+            return;
+        }
+
         try
         {
             var result = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions
@@ -75,12 +151,10 @@ public class CreateListingPhotosPage : UniPage
                 Title = "Select Product Photo"
             });
 
-            if (result != null)
+            if (result != null && !selectedPhotos.Contains(result.FullPath))
             {
-                State.Draft.ImageSource = result.FullPath;
-                preview.Source = ImageSource.FromFile(result.FullPath);
-                preview.IsVisible = true;
-                uploadCard.IsVisible = false;
+                selectedPhotos.Add(result.FullPath);
+                RefreshGallery();
             }
         }
         catch (Exception ex)
@@ -446,186 +520,455 @@ public class PaymentSuccessPage : UniPage
 
 public class ProductDetailPage : UniPage
 {
- public ProductDetailPage()
- {
-     var p = State.CurrentProduct ?? new MarketplaceProduct
-     {
-         ProductName = "Iced Strawberry Matcha Latte",
-         Price = 95,
-         Quantity = 5,
-         ImageSource = "matcha.jpg",
-         Category = "Food & Drinks",
-         Condition = "Freshly Prepared",
-         Seller = "@matchabykai",
-         Description = "Signature iced matcha layered with authentic Japanese Uji matcha and house-made strawberry puree with creamy fresh milk."
-     };
+    public ProductDetailPage()
+    {
+        var p = State.CurrentProduct ?? new MarketplaceProduct
+        {
+            ProductName = "Iced Strawberry Matcha Latte",
+            Price = 95,
+            Quantity = 5,
+            ImageSource = "matcha.jpg",
+            Category = "Food & Drinks",
+            Condition = "Freshly Prepared",
+            Seller = "@matchabykai",
+            Description = "Signature iced matcha layered with authentic Japanese Uji matcha and house-made strawberry puree with creamy fresh milk."
+        };
 
-     // Top Action Header (Back & Share)
-     var top = new Grid { Padding = new Thickness(16, 8), ColumnDefinitions = Cols("Auto,*,Auto"), BackgroundColor = Colors.Transparent };
-     var backBtn = Card(L("‹", 26, false, Text), 0);
-     backBtn.HeightRequest = 38; backBtn.WidthRequest = 38;
-     ((Label)backBtn.Content).HorizontalOptions = LayoutOptions.Center;
-     ((Label)backBtn.Content).VerticalOptions = LayoutOptions.Center;
-     var backTap = new TapGestureRecognizer();
-     backTap.Tapped += async (_, _) => await Go("..");
-     backBtn.GestureRecognizers.Add(backTap);
-     top.Add(backBtn);
+        var currentUserName = string.IsNullOrWhiteSpace(State.CurrentUserName) ? "Maria Santos" : State.CurrentUserName;
+        var currentHandle = "@" + currentUserName.ToLower().Replace(" ", "");
+        bool isOwner = p.Seller.Equals(currentHandle, StringComparison.OrdinalIgnoreCase) 
+                    || p.Seller.Contains(currentUserName, StringComparison.OrdinalIgnoreCase)
+                    || p.Seller.Contains("mariasantos", StringComparison.OrdinalIgnoreCase);
 
-     var shareBtn = Card(L("⤤", 18, false, Text), 0);
-     shareBtn.HeightRequest = 38; shareBtn.WidthRequest = 38;
-     ((Label)shareBtn.Content).HorizontalOptions = LayoutOptions.Center;
-     ((Label)shareBtn.Content).VerticalOptions = LayoutOptions.Center;
-     var shareTap = new TapGestureRecognizer();
-     shareTap.Tapped += async (_, _) => { if (Shell.Current != null) await Shell.Current.DisplayAlert("Share", $"Share link to {p.ProductName} on campus!", "OK"); };
-     shareBtn.GestureRecognizers.Add(shareTap);
-     top.Add(shareBtn, 2);
+        // Top Action Header (Back & Share/Edit)
+        var top = new Grid { Padding = new Thickness(16, 8), ColumnDefinitions = Cols("Auto,*,Auto"), BackgroundColor = Colors.Transparent };
+        var backBtn = Card(L("‹", 26, false, Text), 0);
+        backBtn.HeightRequest = 38; backBtn.WidthRequest = 38;
+        ((Label)backBtn.Content).HorizontalOptions = LayoutOptions.Center;
+        ((Label)backBtn.Content).VerticalOptions = LayoutOptions.Center;
+        var backTap = new TapGestureRecognizer();
+        backTap.Tapped += async (_, _) => await Go("..");
+        backBtn.GestureRecognizers.Add(backTap);
+        top.Add(backBtn);
 
-     // Body Scroll Content
-     var scrollContent = new VerticalStackLayout { Spacing = 14, Padding = new Thickness(16, 0, 16, 20) };
+        var topActions = new HorizontalStackLayout { Spacing = 8, HorizontalOptions = LayoutOptions.End };
+        if (isOwner)
+        {
+            var editTopBtn = Card(L("✏", 16, false, Text), 0);
+            editTopBtn.HeightRequest = 38; editTopBtn.WidthRequest = 38;
+            ((Label)editTopBtn.Content).HorizontalOptions = LayoutOptions.Center;
+            ((Label)editTopBtn.Content).VerticalOptions = LayoutOptions.Center;
+            var editTap = new TapGestureRecognizer();
+            editTap.Tapped += async (_, _) => await Go("edit-listing");
+            editTopBtn.GestureRecognizers.Add(editTap);
+            topActions.Add(editTopBtn);
+        }
 
-     // 1. Hero Image Card
-     var heroImage = new Image { Source = p.ImageSource, Aspect = Aspect.AspectFill, HeightRequest = 250 };
-     var imageCard = new Border { StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 22 }, Content = heroImage };
-     scrollContent.Add(imageCard);
+        var shareBtn = Card(L("⤤", 18, false, Text), 0);
+        shareBtn.HeightRequest = 38; shareBtn.WidthRequest = 38;
+        ((Label)shareBtn.Content).HorizontalOptions = LayoutOptions.Center;
+        ((Label)shareBtn.Content).VerticalOptions = LayoutOptions.Center;
+        var shareTap = new TapGestureRecognizer();
+        shareTap.Tapped += async (_, _) => { if (Shell.Current != null) await Shell.Current.DisplayAlert("Share", $"Share link to {p.ProductName} on campus!", "OK"); };
+        shareBtn.GestureRecognizers.Add(shareTap);
+        topActions.Add(shareBtn);
+        top.Add(topActions, 2);
 
-     // 2. Thumbnails Row
-     var thumbs = new HorizontalStackLayout { Spacing = 10, HorizontalOptions = LayoutOptions.Center };
-     foreach (var thumbSrc in new[] { p.ImageSource, "matcha.jpg", "crochet_bouquet.jpg" })
-     {
-         var thumbImg = new Image { Source = thumbSrc, Aspect = Aspect.AspectFill, HeightRequest = 46, WidthRequest = 46 };
-         var thumbBorder = new Border { Stroke = Line, StrokeThickness = 1, StrokeShape = new RoundRectangle { CornerRadius = 12 }, Content = thumbImg };
-         var selectThumbTap = new TapGestureRecognizer();
-         selectThumbTap.Tapped += (_, _) => heroImage.Source = thumbSrc;
-         thumbBorder.GestureRecognizers.Add(selectThumbTap);
-         thumbs.Add(thumbBorder);
-     }
-     scrollContent.Add(thumbs);
+        // Body Scroll Content
+        var scrollContent = new VerticalStackLayout { Spacing = 14, Padding = new Thickness(16, 0, 16, 20) };
 
-     // 3. Title, Seller & Rating
-     var titleRow = new Grid { ColumnDefinitions = Cols("*,Auto") };
-     var titleCol = new VerticalStackLayout { Spacing = 2 };
-     titleCol.Add(L(p.ProductName, 18, true));
-     titleCol.Add(L($"By {p.Seller} • {p.Category}", 11, false, Muted));
-     titleRow.Add(titleCol);
+        // 1. Hero Image Card
+        var heroImage = new Image { Source = p.ImageSource, Aspect = Aspect.AspectFill, HeightRequest = 250 };
+        var imageCard = new Border { StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 22 }, Content = heroImage };
+        scrollContent.Add(imageCard);
 
-     var ratingBadge = new Border { BackgroundColor = (Color)Application.Current!.Resources["InputBackground"], StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 10 }, Padding = new Thickness(8, 4), VerticalOptions = LayoutOptions.Start, Content = L("★ 4.9", 11, true, (Color)Application.Current!.Resources["AccentGold"]) };
-     titleRow.Add(ratingBadge, 1);
-     scrollContent.Add(titleRow);
+        // 2. Thumbnails Row (All images up to 5)
+        var allImages = new List<string> { p.ImageSource };
+        foreach (var img in p.AdditionalImages) { if (!allImages.Contains(img)) allImages.Add(img); }
+        if (allImages.Count == 1)
+        {
+            if (p.ProductName.Contains("Matcha")) allImages.Add("brownies.jpg");
+            else if (p.ProductName.Contains("Madoka")) allImages.Add("homura.jpg");
+        }
 
-     // 4. Condition & Meetup Chips
-     var chips = new HorizontalStackLayout { Spacing = 8 };
-     chips.Add(new Border { BackgroundColor = (Color)Application.Current!.Resources["LightGreen"], StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 8 }, Padding = new Thickness(8, 3), Content = L($"{p.Quantity} in Stock", 10, true, (Color)Application.Current!.Resources["SuccessGreen"]) });
-     chips.Add(new Border { BackgroundColor = (Color)Application.Current!.Resources["InputBackground"], StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 8 }, Padding = new Thickness(8, 3), Content = L(p.Condition, 10, false, Muted) });
-     chips.Add(new Border { BackgroundColor = (Color)Application.Current!.Resources["InputBackground"], StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 8 }, Padding = new Thickness(8, 3), Content = L("No Courier Fee", 10, false, Muted) });
-     scrollContent.Add(chips);
+        var thumbs = new HorizontalStackLayout { Spacing = 10, HorizontalOptions = LayoutOptions.Center };
+        foreach (var thumbSrc in allImages.Take(5))
+        {
+            var thumbImg = new Image { Source = thumbSrc, Aspect = Aspect.AspectFill, HeightRequest = 46, WidthRequest = 46 };
+            var thumbBorder = new Border { Stroke = Line, StrokeThickness = 1, StrokeShape = new RoundRectangle { CornerRadius = 12 }, Content = thumbImg };
+            var selectThumbTap = new TapGestureRecognizer();
+            selectThumbTap.Tapped += (_, _) => heroImage.Source = thumbSrc;
+            thumbBorder.GestureRecognizers.Add(selectThumbTap);
+            thumbs.Add(thumbBorder);
+        }
+        scrollContent.Add(thumbs);
 
-     // 5. Segmented Detail Tabs (About, Schedule, Meetup Spot)
-     var descCard = L(string.IsNullOrWhiteSpace(p.Description) ? "Freshly made on campus by student entrepreneur. Local physical meetups only." : p.Description, 13, false, Muted);
-     var schedCard = L("Selling Schedule:\n• Monday: 10:00 AM – 2:00 PM\n• Wednesday: 11:00 AM – 3:00 PM\n• Friday: 1:00 PM – 4:30 PM", 12, false, Muted);
-     schedCard.IsVisible = false;
-     var meetupCard = L($"Pickup Location:\n{p.MeetupLocation ?? "Main Building – Ground Floor Lobby"}\n\nInstructions: {p.PickupInstructions ?? "Look for the seller with the UniMart tote bag near the main elevators."}", 12, false, Muted);
-     meetupCard.IsVisible = false;
+        // 3. Title, Seller & Rating
+        var titleRow = new Grid { ColumnDefinitions = Cols("*,Auto") };
+        var titleCol = new VerticalStackLayout { Spacing = 2 };
+        titleCol.Add(L(p.ProductName, 18, true));
+        titleCol.Add(L($"By {p.Seller} • {p.Category}", 11, false, Muted));
+        titleRow.Add(titleCol);
 
-     var tabAbout = new Button { Text = "About", BackgroundColor = Blue, TextColor = Colors.White, HeightRequest = 32, CornerRadius = 16, FontSize = 11, FontAttributes = FontAttributes.Bold, Padding = new Thickness(14, 0) };
-     var tabSched = new Button { Text = "Schedule", BackgroundColor = Colors.Transparent, TextColor = Muted, HeightRequest = 32, CornerRadius = 16, FontSize = 11, Padding = new Thickness(12, 0) };
-     var tabMeet = new Button { Text = "Meetup Spot", BackgroundColor = Colors.Transparent, TextColor = Muted, HeightRequest = 32, CornerRadius = 16, FontSize = 11, Padding = new Thickness(12, 0) };
+        var ratingBadge = new Border { BackgroundColor = (Color)Application.Current!.Resources["InputBackground"], StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 10 }, Padding = new Thickness(8, 4), VerticalOptions = LayoutOptions.Start, Content = L("★ 4.9", 11, true, (Color)Application.Current!.Resources["AccentGold"]) };
+        titleRow.Add(ratingBadge, 1);
+        scrollContent.Add(titleRow);
 
-     void SetTab(Button active)
-     {
-         foreach (var b in new[] { tabAbout, tabSched, tabMeet })
-         {
-             b.BackgroundColor = b == active ? Blue : Colors.Transparent;
-             b.TextColor = b == active ? Colors.White : Muted;
-             b.FontAttributes = b == active ? FontAttributes.Bold : FontAttributes.None;
-         }
-         descCard.IsVisible = active == tabAbout;
-         schedCard.IsVisible = active == tabSched;
-         meetupCard.IsVisible = active == tabMeet;
-     }
+        // 4. Condition & Meetup Chips
+        var chips = new HorizontalStackLayout { Spacing = 8 };
+        chips.Add(new Border { BackgroundColor = (Color)Application.Current!.Resources["LightGreen"], StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 8 }, Padding = new Thickness(8, 3), Content = L($"{p.Quantity} in Stock", 10, true, (Color)Application.Current!.Resources["SuccessGreen"]) });
+        chips.Add(new Border { BackgroundColor = (Color)Application.Current!.Resources["InputBackground"], StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 8 }, Padding = new Thickness(8, 3), Content = L(p.Condition, 10, false, Muted) });
+        if (isOwner)
+        {
+            chips.Add(new Border { BackgroundColor = Color.FromArgb("#1E3A8A"), StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 8 }, Padding = new Thickness(8, 3), Content = L("Your Product Listing", 10, true, Color.FromArgb("#93C5FD")) });
+        }
+        else
+        {
+            chips.Add(new Border { BackgroundColor = (Color)Application.Current!.Resources["InputBackground"], StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 8 }, Padding = new Thickness(8, 3), Content = L("No Courier Fee", 10, false, Muted) });
+        }
+        scrollContent.Add(chips);
 
-     tabAbout.Clicked += (_, _) => SetTab(tabAbout);
-     tabSched.Clicked += (_, _) => SetTab(tabSched);
-     tabMeet.Clicked += (_, _) => SetTab(tabMeet);
+        // 5. Segmented Detail Tabs (About, Schedule, Meetup Spot)
+        var descCard = L(string.IsNullOrWhiteSpace(p.Description) ? "Campus student listing. Local meetups inside campus." : p.Description, 13, false, Muted);
+        var schedCard = L("Selling Schedule:\n• Monday: 10:00 AM – 2:00 PM\n• Wednesday: 11:00 AM – 3:00 PM\n• Friday: 1:00 PM – 4:30 PM", 12, false, Muted);
+        schedCard.IsVisible = false;
+        var meetupCard = L($"Pickup Location:\n{p.MeetupLocation ?? "Main Building – Ground Floor Lobby"}\n\nInstructions: {p.PickupInstructions ?? "Look for the seller with the BazHeart tote bag near the main lobby."}", 12, false, Muted);
+        meetupCard.IsVisible = false;
 
-     var tabs = new HorizontalStackLayout { Spacing = 8, Margin = new Thickness(0, 4, 0, 0) };
-     tabs.Add(tabAbout);
-     tabs.Add(tabSched);
-     tabs.Add(tabMeet);
-     scrollContent.Add(tabs);
+        var tabAbout = new Button { Text = "About", BackgroundColor = Blue, TextColor = Colors.White, HeightRequest = 32, CornerRadius = 16, FontSize = 11, FontAttributes = FontAttributes.Bold, Padding = new Thickness(14, 0) };
+        var tabSched = new Button { Text = "Schedule", BackgroundColor = Colors.Transparent, TextColor = Muted, HeightRequest = 32, CornerRadius = 16, FontSize = 11, Padding = new Thickness(12, 0) };
+        var tabMeet = new Button { Text = "Meetup Spot", BackgroundColor = Colors.Transparent, TextColor = Muted, HeightRequest = 32, CornerRadius = 16, FontSize = 11, Padding = new Thickness(12, 0) };
 
-     // 6. Description Text & Info Panels
-     scrollContent.Add(descCard);
-     scrollContent.Add(schedCard);
-     scrollContent.Add(meetupCard);
+        void SetTab(Button active)
+        {
+            foreach (var b in new[] { tabAbout, tabSched, tabMeet })
+            {
+                b.BackgroundColor = b == active ? Blue : Colors.Transparent;
+                b.TextColor = b == active ? Colors.White : Muted;
+                b.FontAttributes = b == active ? FontAttributes.Bold : FontAttributes.None;
+            }
+            descCard.IsVisible = active == tabAbout;
+            schedCard.IsVisible = active == tabSched;
+            meetupCard.IsVisible = active == tabMeet;
+        }
 
-     // 7. Sticky Bottom Floating Action Bar
-     var bottomBar = new Border
-     {
-         BackgroundColor = (Color)Application.Current!.Resources["CardBg"],
-         Stroke = Line,
-         StrokeThickness = 1,
-         StrokeShape = new RoundRectangle { CornerRadius = 24 },
-         Padding = new Thickness(16, 10),
-         Margin = new Thickness(16, 0, 16, 12)
-     };
+        tabAbout.Clicked += (_, _) => SetTab(tabAbout);
+        tabSched.Clicked += (_, _) => SetTab(tabSched);
+        tabMeet.Clicked += (_, _) => SetTab(tabMeet);
 
-     var bottomGrid = new Grid { ColumnDefinitions = Cols("Auto,*,Auto"), ColumnSpacing = 12 };
+        var tabs = new HorizontalStackLayout { Spacing = 8, Margin = new Thickness(0, 4, 0, 0) };
+        tabs.Add(tabAbout);
+        tabs.Add(tabSched);
+        tabs.Add(tabMeet);
+        scrollContent.Add(tabs);
 
-     // Heart Wishlist Button
-     var heartBtn = new Border { BackgroundColor = (Color)Application.Current!.Resources["InputBackground"], StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 18 }, HeightRequest = 44, WidthRequest = 44 };
-     var heartLbl = L("♡", 20, false, Muted);
-     heartLbl.HorizontalOptions = LayoutOptions.Center; heartLbl.VerticalOptions = LayoutOptions.Center;
-     heartBtn.Content = heartLbl;
-     var heartTap = new TapGestureRecognizer();
-     heartTap.Tapped += async (_, _) =>
-     {
-         await heartBtn.ScaleToAsync(1.3, 100, Easing.SpringOut);
-         heartLbl.Text = heartLbl.Text == "♡" ? "♥" : "♡";
-         heartLbl.TextColor = heartLbl.Text == "♥" ? Color.FromArgb("#EF4444") : Muted;
-         await heartBtn.ScaleToAsync(1.0, 100, Easing.SpringIn);
-     };
-     heartBtn.GestureRecognizers.Add(heartTap);
-     bottomGrid.Add(heartBtn);
+        // 6. Description Text & Info Panels
+        scrollContent.Add(descCard);
+        scrollContent.Add(schedCard);
+        scrollContent.Add(meetupCard);
 
-     // Price Display
-     var priceStack = new VerticalStackLayout { VerticalOptions = LayoutOptions.Center, Spacing = 0 };
-     priceStack.Add(L("Total Price", 10, false, Muted));
-     priceStack.Add(L($"₱{p.Price:0.00}", 18, true, Blue));
-     bottomGrid.Add(priceStack, 1);
+        // 7. Sticky Bottom Floating Action Bar
+        var bottomBar = new Border
+        {
+            BackgroundColor = (Color)Application.Current!.Resources["CardBg"],
+            Stroke = Line,
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = 24 },
+            Padding = new Thickness(16, 10),
+            Margin = new Thickness(16, 0, 16, 12),
+            Shadow = new Shadow { Brush = Color.FromArgb("#000000"), Offset = new Point(0, 4), Radius = 12, Opacity = 0.15f }
+        };
 
-     // Action Button
-     var msgBtn = Btn("Message Seller", async (_, _) => await Go("chat"));
-     msgBtn.HeightRequest = 46;
-     msgBtn.Padding = new Thickness(18, 0);
-     bottomGrid.Add(msgBtn, 2);
+        var bottomGrid = new Grid { ColumnDefinitions = Cols("Auto,*,Auto"), ColumnSpacing = 12 };
 
-     bottomBar.Content = bottomGrid;
+        // Heart Wishlist Button
+        var heartBtn = new Border { BackgroundColor = (Color)Application.Current!.Resources["InputBackground"], StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 18 }, HeightRequest = 44, WidthRequest = 44 };
+        var heartLbl = L("♡", 20, false, Muted);
+        heartLbl.HorizontalOptions = LayoutOptions.Center; heartLbl.VerticalOptions = LayoutOptions.Center;
+        heartBtn.Content = heartLbl;
+        var heartTap = new TapGestureRecognizer();
+        heartTap.Tapped += async (_, _) =>
+        {
+            await heartBtn.ScaleToAsync(1.35, 90, Easing.SpringOut);
+            AppState.Instance.ToggleSaved(p);
+            heartLbl.Text = p.IsSaved ? "♥" : "♡";
+            heartLbl.TextColor = p.IsSaved ? Color.FromArgb("#F43F5E") : Muted;
+            await heartBtn.ScaleToAsync(1.0, 90, Easing.SpringIn);
+        };
+        heartBtn.GestureRecognizers.Add(heartTap);
+        bottomGrid.Add(heartBtn);
 
-     var root = new Grid
-     {
-         RowDefinitions = new RowDefinitionCollection
-         {
-             new RowDefinition { Height = GridLength.Auto },
-             new RowDefinition { Height = GridLength.Star },
-             new RowDefinition { Height = GridLength.Auto }
-         }
-     };
+        // Price Display
+        var priceStack = new VerticalStackLayout { VerticalOptions = LayoutOptions.Center, Spacing = 0 };
+        priceStack.Add(L("Total Price", 10, false, Muted));
+        priceStack.Add(L($"₱{p.Price:0.00}", 18, true, Blue));
+        bottomGrid.Add(priceStack, 1);
 
-     // Top Header
-     Grid.SetRow(top, 0);
-     root.Add(top);
+        // Action Button: Message Seller (if buyer) or Edit Listing & Stock (if owner)
+        Button actionBtn;
+        if (isOwner)
+        {
+            actionBtn = Btn("✏ Edit Listing & Stock", async (_, _) => await Go("edit-listing"));
+        }
+        else
+        {
+            actionBtn = Btn("Message Seller", async (_, _) => await Go("chat"));
+        }
+        actionBtn.HeightRequest = 46;
+        actionBtn.Padding = new Thickness(16, 0);
+        bottomGrid.Add(actionBtn, 2);
 
-     // Middle Scroll View
-     var scrollView = new ScrollView { Content = scrollContent };
-     Grid.SetRow(scrollView, 1);
-     root.Add(scrollView);
+        bottomBar.Content = bottomGrid;
 
-     // Bottom Action Bar
-     Grid.SetRow(bottomBar, 2);
-     root.Add(bottomBar);
+        var root = new Grid
+        {
+            RowDefinitions = new RowDefinitionCollection
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star },
+                new RowDefinition { Height = GridLength.Auto }
+            }
+        };
 
-     Content = root;
- }
+        Grid.SetRow(top, 0);
+        root.Add(top);
+
+        var scrollView = new ScrollView { Content = scrollContent };
+        Grid.SetRow(scrollView, 1);
+        root.Add(scrollView);
+
+        Grid.SetRow(bottomBar, 2);
+        root.Add(bottomBar);
+
+        Content = root;
+    }
+}
+
+public class EditListingPage : UniPage
+{
+    readonly Entry nameEntry;
+    readonly Entry priceEntry;
+    readonly Entry stockEntry;
+    readonly Picker categoryPicker;
+    readonly Picker conditionPicker;
+    readonly Editor descEditor;
+    readonly Picker dayPicker;
+    readonly Entry timeEntry;
+    readonly Picker locPicker;
+    readonly Editor instructionsEditor;
+    readonly List<string> photos = [];
+    readonly HorizontalStackLayout photosRow = new() { Spacing = 10 };
+    readonly Border addPhotoBtn;
+    readonly Label photosCountLabel;
+
+    public EditListingPage()
+    {
+        var p = State.CurrentProduct ?? new MarketplaceProduct();
+
+        nameEntry = new Entry { Text = p.ProductName, TextColor = Text };
+        priceEntry = new Entry { Text = p.Price.ToString("0.00"), Keyboard = Keyboard.Numeric, TextColor = Text };
+        stockEntry = new Entry { Text = p.Quantity.ToString(), Keyboard = Keyboard.Numeric, TextColor = Text };
+
+        categoryPicker = new Picker
+        {
+            ItemsSource = new List<string> { "Food & Drinks", "Handmade", "Clothes", "Accessories", "School Supplies", "Other" },
+            SelectedItem = p.Category,
+            TextColor = Text
+        };
+
+        conditionPicker = new Picker
+        {
+            ItemsSource = new List<string> { "Freshly Prepared / Baked", "Brand New", "Like New", "Good Condition", "Made to Order" },
+            SelectedItem = p.Condition,
+            TextColor = Text
+        };
+
+        descEditor = new Editor { Text = p.Description, HeightRequest = 90, TextColor = Text };
+
+        dayPicker = new Picker
+        {
+            ItemsSource = new List<string> { "Monday to Friday", "Monday, Wednesday, Friday", "Tuesday, Thursday", "Everyday" },
+            SelectedIndex = 0,
+            TextColor = Text
+        };
+
+        timeEntry = new Entry { Text = "10:00 AM – 3:00 PM", TextColor = Text };
+        locPicker = new Picker
+        {
+            ItemsSource = new List<string> { "Main Building – Ground Floor Lobby", "Student Activity Center (SAC)", "University Library Entrance", "Campus Plaza Benches" },
+            SelectedItem = p.MeetupLocation ?? "Main Building – Ground Floor Lobby",
+            TextColor = Text
+        };
+
+        instructionsEditor = new Editor { Text = p.PickupInstructions ?? "Meet near the lobby benches or seller booth.", HeightRequest = 70, TextColor = Text };
+
+        if (!string.IsNullOrWhiteSpace(p.ImageSource) && !photos.Contains(p.ImageSource)) photos.Add(p.ImageSource);
+        foreach (var img in p.AdditionalImages) { if (!photos.Contains(img)) photos.Add(img); }
+
+        var addLbl = L("📷\n+ Add", 11, true, Blue);
+        addLbl.HorizontalTextAlignment = TextAlignment.Center;
+        addLbl.VerticalTextAlignment = TextAlignment.Center;
+        addPhotoBtn = Card(addLbl, 6);
+        addPhotoBtn.HeightRequest = 85;
+        addPhotoBtn.WidthRequest = 85;
+        var addPhotoTap = new TapGestureRecognizer();
+        addPhotoTap.Tapped += PickPhoto;
+        addPhotoBtn.GestureRecognizers.Add(addPhotoTap);
+
+        photosCountLabel = L("Photos (Min 1, Max 5)", 13, true);
+
+        var form = new VerticalStackLayout { Padding = new Thickness(16, 4, 16, 30), Spacing = 14 };
+        form.Add(L("Edit Product & Campus Availability", 19, true));
+        form.Add(L("Update item specifications, price, stock inventory, and handover meetup details.", 12, false, Muted));
+
+        // Photos Row
+        form.Add(photosCountLabel);
+        form.Add(new ScrollView { Orientation = ScrollOrientation.Horizontal, Content = photosRow });
+        RefreshPhotos();
+
+        // Product Details
+        form.Add(Field("Product Name / Title *", nameEntry));
+
+        var grid2 = new Grid { ColumnDefinitions = Cols("*,*"), ColumnSpacing = 10 };
+        grid2.Add(Field("Price (₱) *", priceEntry));
+        grid2.Add(Field("Stock Quantity *", stockEntry), 1);
+        form.Add(grid2);
+
+        form.Add(Field("Category", categoryPicker));
+        form.Add(Field("Item Condition", conditionPicker));
+        form.Add(Field("Description", descEditor));
+
+        // Schedule & Meetup
+        form.Add(L("Campus Schedule & Location", 15, true, Blue));
+        form.Add(Field("Selling Days", dayPicker));
+        form.Add(Field("Handover Time Window", timeEntry));
+        form.Add(Field("Campus Meetup Location", locPicker));
+        form.Add(Field("Pickup Instructions", instructionsEditor));
+
+        // Save Button
+        var saveBtn = Btn("Save Changes ✓", OnSaveChanges);
+        saveBtn.HeightRequest = 50;
+        form.Add(saveBtn);
+
+        SetPage("Edit Listing", new ScrollView { Content = form });
+    }
+
+    void RefreshPhotos()
+    {
+        photosRow.Children.Clear();
+        foreach (var ph in photos.ToList())
+        {
+            var cell = new Grid { HeightRequest = 85, WidthRequest = 85 };
+            var img = new Image
+            {
+                Source = ph.StartsWith("http") || ph.EndsWith(".jpg") || ph.EndsWith(".png") ? ImageSource.FromFile(ph) : ImageSource.FromFile(ph),
+                Aspect = Aspect.AspectFill
+            };
+            cell.Add(new Border { Stroke = Line, StrokeThickness = 1, StrokeShape = new RoundRectangle { CornerRadius = 14 }, Content = img });
+
+            var delBtn = new Border
+            {
+                BackgroundColor = Color.FromArgb("#EF4444"),
+                StrokeThickness = 0,
+                StrokeShape = new RoundRectangle { CornerRadius = 10 },
+                HeightRequest = 22,
+                WidthRequest = 22,
+                HorizontalOptions = LayoutOptions.End,
+                VerticalOptions = LayoutOptions.Start,
+                Margin = 3
+            };
+            delBtn.Content = L("✕", 9.5, true, Colors.White);
+            ((Label)delBtn.Content).HorizontalOptions = LayoutOptions.Center;
+            ((Label)delBtn.Content).VerticalOptions = LayoutOptions.Center;
+            var delTap = new TapGestureRecognizer();
+            delTap.Tapped += (_, _) => { photos.Remove(ph); RefreshPhotos(); };
+            delBtn.GestureRecognizers.Add(delTap);
+            cell.Add(delBtn);
+
+            photosRow.Add(cell);
+        }
+
+        if (photos.Count < 5) photosRow.Add(addPhotoBtn);
+        photosCountLabel.Text = $"Photos ({photos.Count}/5 Selected)";
+    }
+
+    async void PickPhoto(object? s, TappedEventArgs e)
+    {
+        if (photos.Count >= 5)
+        {
+            if (Shell.Current != null) await Shell.Current.DisplayAlert("Photo Limit", "Maximum of 5 photos allowed.", "OK");
+            return;
+        }
+
+        try
+        {
+            var res = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions { Title = "Add Listing Photo" });
+            if (res != null && !photos.Contains(res.FullPath))
+            {
+                photos.Add(res.FullPath);
+                RefreshPhotos();
+            }
+        }
+        catch (Exception ex)
+        {
+            if (Shell.Current != null) await Shell.Current.DisplayAlert("Photo Picker", ex.Message, "OK");
+        }
+    }
+
+    async void OnSaveChanges(object? s, EventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(nameEntry.Text))
+        {
+            await Shell.Current.DisplayAlert("Missing Field", "Please enter product name.", "OK");
+            return;
+        }
+
+        if (!decimal.TryParse(priceEntry.Text, out decimal parsedPrice) || parsedPrice <= 0)
+        {
+            await Shell.Current.DisplayAlert("Invalid Price", "Please enter a valid price.", "OK");
+            return;
+        }
+
+        if (!int.TryParse(stockEntry.Text, out int parsedStock) || parsedStock < 0)
+        {
+            await Shell.Current.DisplayAlert("Invalid Stock", "Please enter a valid stock quantity.", "OK");
+            return;
+        }
+
+        var p = State.CurrentProduct;
+        if (p != null)
+        {
+            p.ProductName = nameEntry.Text.Trim();
+            p.Price = parsedPrice;
+            p.Quantity = parsedStock;
+            p.Category = categoryPicker.SelectedItem?.ToString() ?? "Campus Item";
+            p.Condition = conditionPicker.SelectedItem?.ToString() ?? "Good Condition";
+            p.Description = descEditor.Text?.Trim() ?? "";
+            p.MeetupLocation = locPicker.SelectedItem?.ToString() ?? "Main Building – Ground Floor Lobby";
+            p.PickupInstructions = instructionsEditor.Text?.Trim() ?? "";
+            if (photos.Count > 0)
+            {
+                p.ImageSource = photos[0];
+                p.AdditionalImages = photos.Skip(1).ToList();
+            }
+
+            var existing = State.Listings.FirstOrDefault(x => x.ProductName.Equals(p.ProductName, StringComparison.OrdinalIgnoreCase) || (p.BackendListingId.HasValue && x.BackendListingId == p.BackendListingId));
+            if (existing != null)
+            {
+                existing.ProductName = p.ProductName;
+                existing.Price = p.Price;
+                existing.Quantity = p.Quantity;
+                existing.Category = p.Category;
+                existing.Condition = p.Condition;
+                existing.Description = p.Description;
+                existing.ImageSource = p.ImageSource;
+                existing.MeetupLocation = p.MeetupLocation;
+            }
+        }
+
+        await Shell.Current.DisplayAlert("Success", "Listing and stock details updated successfully!", "OK");
+        await Go("..");
+    }
 }
 
 public class SellingSchedulePage : UniPage

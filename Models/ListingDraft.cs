@@ -10,6 +10,7 @@ public class SellingScheduleSlot
 public class ListingDraft
 {
     public string ImageSource { get; set; } = "";
+    public List<string> AdditionalImages { get; set; } = [];
     public string ProductName { get; set; } = "";
     public decimal Price { get; set; } = 0.00m;
     public int Quantity { get; set; } = 1;

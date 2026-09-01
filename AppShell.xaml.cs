@@ -20,6 +20,7 @@ namespace FinalProject
             Routing.RegisterRoute("public-shop", typeof(PublicShopPage));
             Routing.RegisterRoute("saved-items", typeof(SavedItemsPage));
             Routing.RegisterRoute("notifications", typeof(NotificationsPage));
+            Routing.RegisterRoute("edit-listing", typeof(EditListingPage));
         }
     }
 }
